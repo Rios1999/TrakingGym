@@ -66,8 +66,7 @@ const FormularioEjercicio = ({ onEnviar }) => {
                             name="fecha"
                             value={formData.fecha}
                             onChange={handleChange}
-                            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-[11px] font-bold text-blue-500 outline-none uppercase"
-                        />
+                            className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl p-3.5 pr-2 text-[11px] font-bold text-blue-500 outline-none uppercase appearance-none webkit-appearance-none min-h-[52px]" />
                     </div>
                 </div>
 

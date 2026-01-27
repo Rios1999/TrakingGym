@@ -148,7 +148,7 @@ const EmptyState = ({ onAction, title }) => (
 );
 
 const TabButton = ({ active, onClick, label, icon }) => (
-  <button onClick={onClick} className={`flex-1 flex flex-col items-center py-2 rounded-3xl transition-all ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-zinc-500 hover:text-white'}`}>
+  <button onClick={onClick} className={`flex-1 flex flex-col items-center rounded-3xl transition-all ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-zinc-500 hover:text-white'}`}>
     <span className="text-lg">{icon}</span>
     <span className="text-[8px] font-black mt-1 uppercase italic">{label}</span>
   </button>
