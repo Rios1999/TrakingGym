@@ -52,6 +52,7 @@ const FormularioEjercicio = ({ onEnviar }) => {
                         <label className="text-[10px] font-black text-zinc-500 ml-1 tracking-widest uppercase">Ejercicio</label>
                         <input
                             required
+                            type="text"
                             name="ejercicio"
                             value={formData.ejercicio}
                             onChange={handleChange}
