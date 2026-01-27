@@ -63,6 +63,7 @@ const FormularioEjercicio = ({ onEnviar }) => {
                     <div className="w-32 space-y-1.5">
                         <label className="text-[10px] font-black text-zinc-500 ml-1 tracking-widest uppercase">Fecha</label>
                         <input
+                            required
                             type="date"
                             name="fecha"
                             value={formData.fecha}
@@ -110,6 +111,7 @@ const FormularioEjercicio = ({ onEnviar }) => {
                     <div className="flex items-center p-2 pl-4">
                         <div className="flex-1 pr-4">
                             <input
+                                required
                                 type="range"
                                 min="5"
                                 max="10"

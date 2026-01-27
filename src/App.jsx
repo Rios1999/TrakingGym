@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { gymApi } from './api/gymApi';
 import GraficoProgreso from './components/GraficoProgreso';
 import FormularioEjercicio from './components/FormularioEjercicio';
+import CoachAnalysis from './components/CoachAnalysis';
 
 function App() {
   const [respuesta, setRespuesta] = useState(null);
@@ -13,10 +14,9 @@ function App() {
     try {
       const datos = await gymApi.getStats();
       setRespuesta(datos.output);
-      // Si el usuario le dio a "Ver" o "IA" sin datos, lo llevamos a "Ver" al terminar
       if (activeTab === 'add') setActiveTab('view');
     } catch (err) {
-      alert("Error: " + err.message);
+      console.error("Error", err);
     } finally {
       setLoading(false);
     }
@@ -53,69 +53,11 @@ function App() {
           {/* TAB: ANALIZAR (IA) */}
           {activeTab === 'analyze' && (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {!respuesta && !loading ? (
-                <EmptyState onAction={manejarConsulta} title="Análisis de IA" />
-              ) : (
-                <div className="flex flex-col gap-6 w-full max-w-md mx-auto">
-
-                  {/* Tarjeta del Análisis */}
-                  <div className="relative group">
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-600 to-teal-500 rounded-[2.5rem] blur opacity-10"></div>
-
-                    <div className="relative bg-zinc-950/90 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/10 border-l-4 border-l-emerald-500 shadow-xl">
-
-                      {/* Cabecera con el Badge tipo Etiqueta */}
-                      <div className="flex justify-between items-start mb-8">
-                        <div className="space-y-1">
-                          <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">IA Coach</span>
-                          <h4 className="text-xl font-black italic tracking-tighter text-white uppercase">Reporte</h4>
-                        </div>
-
-                        {/* BADGET TIPO ETIQUETA (Solo si hay mejora real) */}
-                        {respuesta?.mejoraGlobal > 0 && (
-                          <div className="flex flex-col items-end">
-                            <div className="bg-emerald-500 text-black text-[14px] font-[900] px-3 py-1 rounded-lg shadow-[0_0_20px_rgba(16,185,129,0.4)] skew-x-[-10deg]">
-                              +{respuesta.mejoraGlobal}%
-                            </div>
-                            <span className="text-[7px] font-black text-emerald-500 mt-1.5 uppercase tracking-widest">Growth Score</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* LISTADO FILTRADO: Solo muestra si hay mejora o datos */}
-                      <div className="space-y-4">
-                        {respuesta?.analisis ? (
-                          respuesta.analisis.split('.').map((linea, index) => {
-                            const texto = linea.trim();
-                            // FILTRO: Si la línea está vacía o dice "Sin datos", no renderizamos nada
-                            if (texto.length < 5 || texto.toLowerCase().includes("sin datos")) return null;
-
-                            return (
-                              <div key={index} className="flex items-start gap-4 border-b border-white/[0.03] pb-4 last:border-0">
-                                <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] shrink-0"></div>
-                                <p className="text-[13px] text-zinc-200 font-bold leading-snug tracking-tight">
-                                  {texto}.
-                                </p>
-                              </div>
-                            );
-                          })
-                        ) : (
-                          <div className="py-10 text-center">
-                            <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">Esperando datos de n8n...</p>
-                          </div>
-                        )}
-                      </div>
-
-                    </div>
-                  </div>
-
-                  {/* Gráfico debajo */}
-                  <div className="bg-zinc-900/40 p-6 rounded-[3rem] border border-white/5">
-                    <GraficoProgreso records={respuesta?.records || []} />
-                  </div>
-
-                </div>
-              )}
+              <CoachAnalysis
+                respuesta={respuesta}
+                loading={loading}
+                onRefresh={manejarConsulta}
+              />
             </div>
           )}
 

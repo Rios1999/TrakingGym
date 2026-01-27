@@ -71,7 +71,7 @@ const GraficoProgreso = ({ records }) => {
             />
             <Line 
               type="monotone" 
-              dataKey="pesoMax" 
+              dataKey="peso" 
               stroke="#3b82f6" 
               strokeWidth={3} 
               dot={{ r: 4, fill: '#3b82f6' }}
