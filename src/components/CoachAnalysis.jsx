@@ -7,17 +7,39 @@ const CoachAnalysis = ({ respuesta, loading, onRefresh }) => {
     const renderLineas = (analisis) => {
         if (!analisis) return null;
 
-        // Separamos por punto seguido de espacio para no romper decimales como 91.67
         return analisis.split(/\.\s+/).map((linea, index) => {
-            const texto = linea.trim().replace(/\.$/, ""); // Quitamos punto final si existe
+            const texto = linea.trim().replace(/\.$/, "");
             if (texto.length < 5 || texto.toLowerCase().includes("sin datos")) return null;
 
+            const partes = texto.split(/:\s+/);
+            const nombreEjercicio = partes[0];
+            const restoTexto = partes[1] || "";
+
+            const esNegativo = restoTexto.includes("-");
+            const esCero = restoTexto.includes("0,00%");
+
+            // Estilos dinámicos para la etiqueta
+            const estiloEtiqueta = esNegativo
+                ? "text-red-500 border-red-500/20 bg-red-500/5 shadow-[0_0_10px_rgba(239,68,68,0.1)]"
+                : esCero
+                    ? "text-zinc-500 border-zinc-500/20 bg-zinc-500/5"
+                    : "text-emerald-500 border-emerald-500/20 bg-emerald-500/5 shadow-[0_0_10px_rgba(16,185,129,0.1)]";
+
             return (
-                <div key={index} className="flex items-start gap-4 border-b border-white/[0.03] pb-4 last:border-0">
-                    <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981] shrink-0"></div>
-                    <p className="text-[13px] text-zinc-200 font-bold leading-snug tracking-tight">
-                        {texto}.
-                    </p>
+                <div key={index} className="flex flex-row items-center justify-between py-2 border-b border-white/5 last:border-0 bg-transparent">
+                    <div className="flex items-center gap-2">
+                        <div className={`h-1 w-1 rounded-full ${esNegativo ? 'bg-red-500' : 'bg-emerald-400'}`}></div>
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+                            {nombreEjercicio}
+                        </span>
+                    </div>
+
+                    {/* Etiqueta de Porcentaje */}
+                    <div className={`px-1.5  rounded-md border ${estiloEtiqueta} backdrop-blur-sm`}>
+                        <span className="text-[13px] font-black tracking-tighter tabular-nums">
+                            {restoTexto}
+                        </span>
+                    </div>
                 </div>
             );
         });
@@ -30,7 +52,7 @@ const CoachAnalysis = ({ respuesta, loading, onRefresh }) => {
 
                 <div className="relative bg-zinc-950/90 backdrop-blur-2xl p-6 rounded-[2.5rem] border border-white/10 border-l-4 border-l-emerald-500 shadow-xl">
 
-                    <div className="flex justify-between items-start mb-6">
+                    <div className="flex justify-between items-start mb-2">
                         <div className="space-y-1">
                             <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">IA Coach</span>
                             <h4 className="text-xl font-black italic tracking-tighter text-white uppercase">Reporte</h4>
@@ -45,15 +67,6 @@ const CoachAnalysis = ({ respuesta, loading, onRefresh }) => {
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /></svg>
                             </button>
-
-                            {/* BADGE DE MEJORA */}
-                            {respuesta?.mejoraGlobal > 0 && (
-                                <div className="flex flex-col items-end">
-                                    <div className="bg-emerald-500 text-black text-[14px] font-[900] px-3 py-1 rounded-lg shadow-[0_0_20px_rgba(16,185,129,0.4)] skew-x-[-10deg]">
-                                        +{respuesta.mejoraGlobal.toString().replace('.', ',')}%
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
 
