@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  textarea {
+    font-size: 16px !important; /* iOS no hará zoom si detecta 16px */
+  }
+
+  /* Si quieres que visualmente se siga viendo pequeño (ej: 13px) */
+  .ios-input-fix {
+    font-size: 16px !important;
+    transform: scale(0.81); /* 16px * 0.81 ≈ 13px */
+    transform-origin: left center;
+    width: 123%; /* Compensamos el encogimiento del scale */
+  }
+}
