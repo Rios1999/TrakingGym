@@ -1,37 +1,41 @@
 @import "tailwindcss";
 
+/* --- CONFIGURACIÓN PARA MÓVILES (iOS Fixes) --- */
 @media screen and (max-width: 768px) {
   input[type="text"],
   input[type="number"],
   input[type="date"],
   textarea {
-    font-size: 16px !important; /* iOS no hará zoom si detecta 16px */
+    font-size: 16px !important; /* Evita el zoom automático en iPhone */
   }
 
-  /* Si quieres que visualmente se siga viendo pequeño (ej: 13px) */
   .ios-input-fix {
     font-size: 16px !important;
-    transform: scale(0.81); /* 16px * 0.81 ≈ 13px */
+    transform: scale(0.81);
     transform-origin: left center;
-    width: 123%; /* Compensamos el encogimiento del scale */
+    width: 123%;
   }
 
-  input[type="date"] {
-    /* Forzamos a que el texto interno no use más espacio del debido */
+  /* Ajuste específico para que el input de fecha sea igual de largo y alto */
+  input[type="date"].input-fecha-gym {
     line-height: normal !important;
     display: flex !important;
     align-items: center !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
-    height: 48px !important; /* Altura fija para que no se descuadre */
+    height: 48px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 }
 
+/* --- ESTILO DEL INPUT DE FECHA Y EL ICONO --- */
 input::-webkit-date-and-time-value {
   text-align: left;
 }
 
-/* 1. Quitamos el icono fantasma de iOS que descuadra todo */
+/* Quitamos el icono nativo invisible que descuadra iOS */
 input[type="date"]::-webkit-calendar-picker-indicator {
     background: transparent;
     appearance: none;
@@ -41,9 +45,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     padding: 0;
 }
 
-/* 2. Ponemos el icono azul como fondo del input (Funciona en iOS y Android) */
+/* Inyectamos el icono azul personalizado */
 .input-fecha-gym {
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>');
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%233b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>');
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 16px;
