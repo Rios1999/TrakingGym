@@ -88,24 +88,25 @@ const FormularioEjercicio = ({ onEnviar }) => {
                 </div>
 
                 {/* Ejercicio + Fecha */}
-                <div className="space-y-4"> {/* Usamos vertical stack para asegurar simetría total en móvil */}
-                    <div className="w-full">
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex-1">
                         <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">Ejercicio</label>
                         <input
                             required type="text" name="ejercicio"
                             value={formData.ejercicio} onChange={handleChange}
                             placeholder="Ej: Press Banca"
-                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm text-white outline-none focus:border-blue-500 min-h-[48px]"
+                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm text-white outline-none focus:border-blue-500"
                         />
                     </div>
-
-                    <div className="w-full">
-                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">Fecha</label>
+                    <div className="w-full sm:w-40">
+                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">
+                            Fecha
+                        </label>
                         <input
                             required type="date" name="fecha"
                             value={formData.fecha} onChange={handleChange}
-                            /* Importante: w-full y min-h-[48px] igual que el de arriba */
-                            className="input-fecha-gym w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 pr-10 text-[11px] text-blue-500 outline-none uppercase min-h-[48px]"
+                            /* Añadimos 'flex-1' para que ocupe el espacio y 'min-w-0' para que no desborde */
+                            className="input-fecha-gym w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 text-[11px] text-blue-500 outline-none uppercase min-h-[48px] flex-1 min-w-0"
                         />
                     </div>
                 </div>
