@@ -99,12 +99,17 @@ const FormularioEjercicio = ({ onEnviar }) => {
                         />
                     </div>
                     <div className="w-full sm:w-32">
-                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">Fecha</label>
+                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">
+                            Fecha
+                        </label>
                         <input
-                            required type="date" name="fecha"
-                            value={formData.fecha} onChange={handleChange}
-                            // Añadimos pr-10 (padding right) para dejar hueco al icono
-                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 pr-10 text-[11px] text-blue-500 outline-none uppercase"
+                            required
+                            type="date"
+                            name="fecha"
+                            value={formData.fecha}
+                            onChange={handleChange}
+                            /* Añadimos 'input-fecha-gym' y quitamos flex-1 si lo tuviera */
+                            className="input-fecha-gym w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 pr-10 text-[11px] text-blue-500 outline-none uppercase min-h-[45px]"
                         />
                     </div>
                 </div>
