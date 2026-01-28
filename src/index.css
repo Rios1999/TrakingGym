@@ -15,6 +15,16 @@
     transform-origin: left center;
     width: 123%; /* Compensamos el encogimiento del scale */
   }
+
+  input[type="date"] {
+    /* Forzamos a que el texto interno no use más espacio del debido */
+    line-height: normal !important;
+    display: flex !important;
+    align-items: center !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    height: 48px !important; /* Altura fija para que no se descuadre */
+  }
 }
 
 input::-webkit-date-and-time-value {

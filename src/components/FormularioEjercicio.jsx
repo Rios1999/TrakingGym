@@ -98,18 +98,15 @@ const FormularioEjercicio = ({ onEnviar }) => {
                             className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm text-white outline-none focus:border-blue-500"
                         />
                     </div>
-                    <div className="w-full sm:w-32">
+                    <div className="w-full sm:w-40">
                         <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">
                             Fecha
                         </label>
                         <input
-                            required
-                            type="date"
-                            name="fecha"
-                            value={formData.fecha}
-                            onChange={handleChange}
-                            /* Añadimos 'input-fecha-gym' y quitamos flex-1 si lo tuviera */
-                            className="input-fecha-gym w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 pr-10 text-[11px] text-blue-500 outline-none uppercase min-h-[45px]"
+                            required type="date" name="fecha"
+                            value={formData.fecha} onChange={handleChange}
+                            /* Añadimos 'flex-1' para que ocupe el espacio y 'min-w-0' para que no desborde */
+                            className="input-fecha-gym w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 text-[11px] text-blue-500 outline-none uppercase min-h-[48px] flex-1 min-w-0"
                         />
                     </div>
                 </div>
