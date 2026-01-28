@@ -46,10 +46,10 @@ const FormularioEjercicio = ({ onEnviar }) => {
 
         } catch (error) {
             // FALLO: Capturamos el mensaje que lanzamos en n8n o gymApi
-            
+
             console.error("Error al registrar:", error);
             setErrorMsg(error.message || "Error inesperado al conectar con el servidor");
-            
+
             // Auto-cerrar el error después de 5 segundos
             setTimeout(() => setErrorMsg(''), 5000);
         } finally {
@@ -103,7 +103,8 @@ const FormularioEjercicio = ({ onEnviar }) => {
                         <input
                             required type="date" name="fecha"
                             value={formData.fecha} onChange={handleChange}
-                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-[11px] text-blue-500 outline-none uppercase"
+                            // Añadimos pr-10 (padding right) para dejar hueco al icono
+                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 pr-10 text-[11px] text-blue-500 outline-none uppercase"
                         />
                     </div>
                 </div>
