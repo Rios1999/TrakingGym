@@ -13,6 +13,7 @@ export const gymApi = {
       method: 'GET',
       headers
     });
+
     if (!response.ok) throw new Error("Error en el GET de n8n");
     return await response.json();
   },
@@ -24,7 +25,18 @@ export const gymApi = {
       headers,
       body: JSON.stringify(datosSerie)
     });
-    if (!response.ok) throw new Error("Error en el POST de n8n");
-    return await response.json();
+    console.log(response)
+    if (!response.ok) {
+      
+        switch(response.status){
+          case 400:
+            throw new Error("Ejercicio no añadido en el diccionario, hable con el administrador");
+          default:
+            throw new Error("Error en el GET de n8n");
+      }
+    }
+
+      
+    return await response.json()
   }
 };
