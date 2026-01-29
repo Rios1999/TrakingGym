@@ -1,14 +1,21 @@
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { gymApi } from './api/gymApi';
 import FormularioEjercicio from './components/FormularioEjercicio';
 import CoachAnalysis from './components/CoachAnalysis';
+import EjercicioHistorial from './components/EjercicioHistorial';
 import ViewRecords from './components/ViewRecords'; // Importamos
 
 function App() {
+  //tiene que seleccionar el ejercicio y el RPE
+  const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState({ ejercicio: "", rpe: "" })
+
+  //datos
   const [analisis, setAnalisis] = useState(null);
   const [records, setRecords] = useState(null);
+  //variables de control
   const [activeTab, setActiveTab] = useState('add');
   const [loading, setLoading] = useState(false);
+
 
   const manejarConsulta = async () => {
     setLoading(true);
@@ -44,6 +51,7 @@ function App() {
     }
   };
 
+
   useEffect(() => {
     if (activeTab === 'view' && !records) {
       cargarRecords();
@@ -63,10 +71,20 @@ function App() {
           {activeTab === 'add' && <FormularioEjercicio onEnviar={guardarEnSheets} />}
 
           {activeTab === 'view' && (
-            <ViewRecords
-              respuesta={records}
-              onSelectEjercicio={(ej) => console.log(ej)}
-            />
+            // LÓGICA DE NAVEGACIÓN INTERNA
+            ejercicioSeleccionado.ejercicio === "" ? (
+              <ViewRecords
+                respuesta={records}
+                // Al pinchar, guardamos el objeto con ejercicio y RPE
+                onSelectEjercicio={(nombre, rpe) => setEjercicioSeleccionado({ ejercicio: nombre, rpe: rpe })}
+              />
+            ) : (
+              <EjercicioHistorial
+                nombreEjercicio={ejercicioSeleccionado.ejercicio}
+                rpeFiltrado={ejercicioSeleccionado.rpe}
+                onVolver={() => setEjercicioSeleccionado({ ejercicio: "", rpe: "" })}
+              />
+            )
           )}
 
           {activeTab === 'analyze' && (
@@ -96,3 +114,5 @@ const TabButton = ({ active, onClick, label, icon }) => (
 );
 
 export default App;
+
+

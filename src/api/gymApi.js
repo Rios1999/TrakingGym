@@ -57,5 +57,27 @@ export const gymApi = {
     }
 
     return await response.json();
-  }
+  },
+
+  getHistorialDetallado: async (ejercicio, rpe, pagina = 1) => {
+    // Definimos el límite de items por página
+    const limit = 10;
+    const url = `${BASE_URL}/${produccion}/e9a2ba4b-8ad2-4a65-9320-8839a389fde6?ejercicio=${encodeURIComponent(ejercicio)}&rpe=${rpe}&page=${pagina}&limit=${limit}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers
+    });
+
+    if (!response.ok) {
+      switch (response.status) {
+        case 404:
+          throw new Error("Webhook de historial no encontrado. Verifica n8n.");
+        default:
+          throw new Error(`Error cargando historial (${response.status})`);
+      }
+    }
+
+    return await response.json();
+  },
 };
