@@ -46,7 +46,7 @@ function App() {
 
   useEffect(() => {
     if (activeTab === 'view' && !records) {
-      //cargarRecords();
+      cargarRecords();
     }
   }, [activeTab]);
 
