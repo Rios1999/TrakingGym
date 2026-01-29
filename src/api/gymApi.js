@@ -25,18 +25,37 @@ export const gymApi = {
       headers,
       body: JSON.stringify(datosSerie)
     });
-    console.log(response)
     if (!response.ok) {
-      
-        switch(response.status){
-          case 400:
-            throw new Error("Ejercicio no añadido en el diccionario, hable con el administrador");
-          default:
-            throw new Error("Error en el GET de n8n");
+
+      switch (response.status) {
+        case 400:
+          throw new Error("Ejercicio no añadido en el diccionario, hable con el administrador");
+        default:
+          throw new Error("Error en el GET de n8n");
       }
     }
 
-      
+
     return await response.json()
+  },
+
+
+  getRecords: async () => {
+    const response = await fetch(`${BASE_URL}/${produccion}/e0ab40d4-66f2-424b-b005-2e088d30328b`, {
+      method: 'GET',
+      headers
+    });
+
+
+    if (!response.ok) {
+      switch (response.status) {
+        case 404:
+          throw new Error("Webhook no encontrado. Verifica que n8n esté en modo 'Listen'");
+        default:
+          throw new Error(`Error en el servidor (${response.status})`);
+      }
+    }
+
+    return await response.json();
   }
 };
