@@ -8,7 +8,7 @@ const FormularioEjercicio = ({ onEnviar }) => {
 
     const [formData, setFormData] = useState({
         ejercicio: '',
-        peso: '',
+        peso: '0',
         repeticiones: '',
         rpe: '8',
         fecha: hoy
@@ -105,7 +105,6 @@ const FormularioEjercicio = ({ onEnviar }) => {
                         <input
                             required type="date" name="fecha"
                             value={formData.fecha} onChange={handleChange}
-                            /* Añadimos 'flex-1' para que ocupe el espacio y 'min-w-0' para que no desborde */
                             className="input-fecha-gym w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 text-[11px] text-blue-500 outline-none uppercase min-h-[48px] flex-1 min-w-0"
                         />
                     </div>
@@ -136,7 +135,7 @@ const FormularioEjercicio = ({ onEnviar }) => {
                 {/* RPE Selector */}
                 <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 p-2 flex items-center gap-4">
                     <input
-                        type="range" min="5" max="10" step="0.5" name="rpe"
+                        type="range" min="5" max="10" step="1" name="rpe"
                         value={formData.rpe} onChange={handleChange}
                         className="flex-1 h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
                     />
