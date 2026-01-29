@@ -46,7 +46,7 @@ function App() {
 
   useEffect(() => {
     if (activeTab === 'view' && !records) {
-      cargarRecords();
+      //cargarRecords();
     }
   }, [activeTab]);
 
@@ -71,7 +71,7 @@ function App() {
 
           {activeTab === 'analyze' && (
             <CoachAnalysis
-              analisis={analisis}
+              respuesta={analisis}
               loading={loading}
               onRefresh={manejarConsulta}
             />

@@ -9,7 +9,7 @@ const headers = {
 export const gymApi = {
   // Función para obtener datos (GET)
   getStats: async () => {
-    const response = await fetch(`${BASE_URL}/${produccion}/e0ab40d4-66f2-424b-b005-2e088d30328b`, {
+    const response = await fetch(`${BASE_URL}/${produccion}/e4ae5042-fe39-4c6b-be5e-5b4d3e4af8db`, {
       method: 'GET',
       headers
     });
