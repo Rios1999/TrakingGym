@@ -116,7 +116,7 @@ const GraficoProgreso = ({ records, analisis }) => {
                   <div key="fuerza" className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                       <span className="text-zinc-500 uppercase text-[8px]">Fuerza Total:</span>
-                      <span className="text-white font-black">{value.toFixed(1)} kg</span>
+                      <span className="text-white font-black">{value.toFixed(1)} Pts</span>
                     </div>
                     <div className="flex items-center gap-2 border-t border-white/5 pt-1 mt-1">
                       <span className="text-zinc-500 uppercase text-[8px]">Carga Real:</span>
