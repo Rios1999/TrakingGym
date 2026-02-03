@@ -19,23 +19,23 @@ const ViewRecords = ({ respuesta, onSelectEjercicio }) => {
   const categorias = useMemo(() => {
     // Si no hay respuesta, devolvemos null para activar el esqueleto
     if (!respuesta || !respuesta.records) return null;
-    
+
     const grupos = {};
     respuesta.records.forEach(rec => {
       const musculo = rec.musculo || "Otros";
       if (!grupos[musculo]) grupos[musculo] = {};
-      
+
       const nombreEj = rec.ejercicio;
       if (!grupos[musculo][nombreEj]) grupos[musculo][nombreEj] = { nombre: nombreEj, rpes: {} };
-      
+
       const rpeKey = String(rec.rpe);
       const pesoActual = Number(rec.peso) || 0;
       const repsActual = Number(rec.reps) || 0;
 
       const recordExistente = grupos[musculo][nombreEj].rpes[rpeKey];
-      const esMejor = !recordExistente || 
-                      (pesoActual > recordExistente.peso) ||
-                      (pesoActual === recordExistente.peso && repsActual > recordExistente.reps);
+      const esMejor = !recordExistente ||
+        (pesoActual > recordExistente.peso) ||
+        (pesoActual === recordExistente.peso && repsActual > recordExistente.reps);
 
       if (esMejor) {
         grupos[musculo][nombreEj].rpes[rpeKey] = {
@@ -76,18 +76,57 @@ const ViewRecords = ({ respuesta, onSelectEjercicio }) => {
     );
   }
 
+  if (respuesta?.records.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 px-6 text-center animate-in fade-in zoom-in duration-700">
+        {/* Icono decorativo de pesa o aviso */}
+        <div className="w-20 h-20 bg-zinc-900/30 rounded-full flex items-center justify-center border border-white/5 mb-6 shadow-2xl">
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#3b82f6"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M6 15h12M6 9h12M3 12h18M3 9v6M21 9v6" />
+          </svg>
+        </div>
+
+        {/* Texto principal */}
+        <h3 className="text-white font-black uppercase italic tracking-tighter text-2xl leading-none">
+          HISTORIAL VACÍO
+        </h3>
+
+        {/* Mensaje motivador */}
+        <p className="text-zinc-500 text-[11px] uppercase font-bold tracking-[0.2em] mt-3 max-w-[220px] leading-relaxed">
+          No se han encontrado registros. <br />
+          <span className="text-blue-500">Sigue entrenando duro</span> para ver tus récords aquí.
+        </p>
+
+        {/* Decoración inferior */}
+        <div className="mt-8 flex gap-1">
+          <div className="h-1 w-8 bg-zinc-800 rounded-full"></div>
+          <div className="h-1 w-2 bg-blue-600 rounded-full"></div>
+          <div className="h-1 w-8 bg-zinc-800 rounded-full"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3 w-full max-w-md mx-auto pb-10 animate-in fade-in duration-500">
       {Object.keys(categorias).map((musculo) => (
         <div key={musculo} className="flex flex-col w-full">
           <button
             onClick={() => setMusculoAbierto(musculoAbierto === musculo ? "" : musculo)}
-            className={`flex justify-between items-center p-5 rounded-[2rem] border transition-all ${
-              musculoAbierto === musculo ? 'bg-zinc-900 border-white/20 mb-2' : 'bg-zinc-900/40 border-white/5 opacity-50'
-            }`}
+            className={`flex justify-between items-center p-5 rounded-[2rem] border transition-all ${musculoAbierto === musculo ? 'bg-zinc-900 border-white/20 mb-2' : 'bg-zinc-900/40 border-white/5 opacity-50'
+              }`}
           >
             <span className="text-xs font-black uppercase tracking-widest text-white">{musculo}</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className={`transition-transform duration-300 ${musculoAbierto === musculo ? 'rotate-180' : ''}`}><path d="m6 9 6 6 6-6"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className={`transition-transform duration-300 ${musculoAbierto === musculo ? 'rotate-180' : ''}`}><path d="m6 9 6 6 6-6" /></svg>
           </button>
 
           <div className={`flex flex-col gap-5 transition-all ${musculoAbierto === musculo ? 'opacity-100 mb-8 pt-2' : 'max-h-0 opacity-0 overflow-hidden'}`}>
@@ -98,8 +137,8 @@ const ViewRecords = ({ respuesta, onSelectEjercicio }) => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 px-1">
-                  {Object.keys(ej.rpes).sort((a,b) => b-a).map((rpe) => (
-                    <div 
+                  {Object.keys(ej.rpes).sort((a, b) => b - a).map((rpe) => (
+                    <div
                       key={rpe}
                       onClick={() => onSelectEjercicio && onSelectEjercicio(ej.nombre, rpe)}
                       className="bg-zinc-900/40 border border-white/5 p-4 rounded-[2rem] flex flex-col relative overflow-hidden group hover:border-blue-500/30 transition-colors cursor-pointer"
@@ -107,7 +146,7 @@ const ViewRecords = ({ respuesta, onSelectEjercicio }) => {
                       <div className={`absolute top-3 right-4 px-2 py-0.5 rounded-full border text-[7px] font-black uppercase tracking-tighter ${getRpeColor(rpe)}`}>
                         RPE {rpe}
                       </div>
-                      
+
                       <div className="flex items-baseline gap-1 mt-3">
                         <span className="text-2xl font-black text-white tracking-tighter tabular-nums">
                           {ej.rpes[rpe].peso || ej.rpes[rpe].reps}
@@ -116,10 +155,10 @@ const ViewRecords = ({ respuesta, onSelectEjercicio }) => {
                           {ej.rpes[rpe].peso > 0 ? 'kg' : 'reps'}
                         </span>
                       </div>
-                      
+
                       <div className="flex justify-between items-end mt-1">
                         <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-tighter">
-                           {ej.rpes[rpe].peso > 0 ? `${ej.rpes[rpe].reps} reps` : 'Bodyweight'}
+                          {ej.rpes[rpe].peso > 0 ? `${ej.rpes[rpe].reps} reps` : 'Bodyweight'}
                         </span>
                         <span className="text-[7px] text-zinc-800 font-bold">{ej.rpes[rpe].fecha}</span>
                       </div>

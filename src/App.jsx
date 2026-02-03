@@ -17,6 +17,24 @@ function App() {
   const [activeTab, setActiveTab] = useState('add');
   const [loading, setLoading] = useState(false);
 
+
+  const resetForm = () => {
+    // Restablecemos el ejercicio manteniendo el userId actual
+    setEjercicioSeleccionado({
+      userId: session?.user.id,
+      ejercicio: "",
+      rpe: ""
+    });
+
+    // Limpiamos los resultados de las consultas
+    setAnalisis(null);
+    setRecords(null);
+
+    // Volvemos a la pestaña inicial y quitamos estados de carga
+    setActiveTab('add');
+    setLoading(false);
+  };
+
   // Escuchar cambios de autenticación
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -70,11 +88,13 @@ function App() {
   };
 
 
+  //escuchador para ir cargando los datos
   useEffect(() => {
     if (session && activeTab === 'view' && !records) {
       cargarRecords();
     }
   }, [activeTab, session]);
+
 
   // Si no hay sesión iniciada, mostramos la pantalla de Auth
   if (!session) {
@@ -99,7 +119,7 @@ function App() {
 
         {/* Sección Derecha: Botón de Salida Cuadrado */}
         <button
-          onClick={() => supabase.auth.signOut()}
+          onClick={() => {resetForm(),supabase.auth.signOut()}}
           className="group relative p-3 bg-zinc-900/50 border border-white/10 rounded-xl hover:border-red-500/50 hover:bg-red-500/5 transition-all active:scale-95"
           title="Cerrar Sesión"
         >

@@ -96,4 +96,26 @@ export const gymApi = {
 
     return await response.json();
   },
+
+
+  /**
+   * Obtiene el último registro realizado por el usuario
+   * @param {string} userId - ID del usuario de Supabase Auth
+   */
+  getUltimoRegistro: async (userId) => {
+
+    const response = await fetch(`${BASE_URL}/${produccion}/f4d80e43-33ef-407a-8a67-d7d5d191eccc?user_id=${userId}`, {
+      method: 'GET',
+      headers
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error obteniendo el último registro (${response.status})`);
+    }
+
+    const data = await response.json();
+
+    // n8n suele devolver un array, si viene vacío significa que el usuario no tiene registros
+    return Array.isArray(data) ? data[0] : data;
+  },
 };
