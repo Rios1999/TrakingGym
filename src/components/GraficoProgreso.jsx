@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo,useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const GraficoProgreso = ({ records, analisis }) => {
+const GraficoProgreso = ({ records, analisis, onEjercicioChange}) => {
   const listaEjercicios = useMemo(() => {
     if (!records) return [];
     return [...new Set(records.map(r => r.ejercicio))];
@@ -11,42 +11,41 @@ const GraficoProgreso = ({ records, analisis }) => {
     listaEjercicios.length > 0 ? listaEjercicios[0] : ""
   );
 
+  // Sincronizar selección
   useMemo(() => {
     if (listaEjercicios.length > 0 && !listaEjercicios.includes(ejercicioSeleccionado)) {
       setEjercicioSeleccionado(listaEjercicios[0]);
     }
   }, [listaEjercicios, ejercicioSeleccionado]);
 
-  const rpeAuto = useMemo(() => {
-    const conteo = records
-      .filter(r => r.ejercicio === ejercicioSeleccionado)
-      .reduce((acc, cur) => {
-        acc[cur.rpe] = (acc[cur.rpe] || 0) + 1;
-        return acc;
-      }, {});
-    return Object.keys(conteo).reduce((a, b) => conteo[a] > conteo[b] ? a : b, "8");
-  }, [records, ejercicioSeleccionado]);
+  useEffect(() => {
+    if (onEjercicioChange) {
+      onEjercicioChange(ejercicioSeleccionado);
+    }
+  }, [ejercicioSeleccionado, onEjercicioChange]);
 
+  // Filtrado directo por ejercicio (Sin RPE)
   const datosFiltrados = useMemo(() => {
     return records
-      .filter(r => r.ejercicio === ejercicioSeleccionado && String(r.rpe) === String(rpeAuto))
+      .filter(r => r.ejercicio === ejercicioSeleccionado)
       .sort((a, b) => {
         const parse = (f) => f.includes('/') ? new Date(f.split('/').reverse().join('-')) : new Date(f);
         return parse(a.fecha) - parse(b.fecha);
       });
-  }, [records, ejercicioSeleccionado, rpeAuto]);
+  }, [records, ejercicioSeleccionado]);
 
   const analisisSeleccionado = useMemo(() => {
-    return analisis?.find(a => a.ejercicio === ejercicioSeleccionado && String(a.rpe) === String(rpeAuto));
-  }, [analisis, ejercicioSeleccionado, rpeAuto]);
+    return analisis?.find(a => a.ejercicio === ejercicioSeleccionado);
+  }, [analisis, ejercicioSeleccionado]);
 
   if (!records || records.length === 0) return null;
 
   return (
     <div className="w-full max-w-2xl space-y-4">
+      {/* Selectores superiores - Diseño original */}
       <div className="flex gap-3 overflow-x-auto no-scrollbar items-center px-1 py-2">
         {listaEjercicios.map((ej) => {
-          const info = analisis?.find(a => a.ejercicio === ej && String(a.rpe) === String(rpeAuto));
+          const info = analisis?.find(a => a.ejercicio === ej);
           const seleccionado = ejercicioSeleccionado === ej;
           let estiloEstado = "border-zinc-800 text-zinc-500";
           if (info?.valor_numerico > 0) estiloEstado = "border-emerald-500/30 text-emerald-500/80";
@@ -56,42 +55,34 @@ const GraficoProgreso = ({ records, analisis }) => {
             <button
               key={ej}
               onClick={() => setEjercicioSeleccionado(ej)}
-              className={`px-4 py-3 rounded-2xl transition-all border shrink-0 whitespace-nowrap flex items-center justify-between gap-4 min-w-[140px] ${
-                seleccionado ? 'bg-blue-600 border-blue-500 text-white scale-105 z-10' : `bg-zinc-900/50 ${estiloEstado}`
-              }`}
+              className={`px-4 py-3 rounded-2xl transition-all border shrink-0 flex items-center justify-between gap-4 min-w-[140px] ${seleccionado ? 'bg-blue-600 border-blue-500 text-white scale-105' : `bg-zinc-900/50 ${estiloEstado}`
+                }`}
             >
               <span className="text-[8px] font-black uppercase truncate max-w-[85px]">{ej}</span>
-              {info && <span className="text-[8px] font-black tabular-nums">{info.porcentaje}</span>}
+              {info && <span className="text-[8px] font-black">{info.porcentaje}</span>}
             </button>
           );
         })}
       </div>
 
       <div className="w-full h-72 bg-zinc-950/50 p-6 rounded-[2.5rem] border border-white/10 shadow-2xl relative">
-        <div className="flex justify-between items-start mb-8 px-2 gap-2">
-          <div className="flex flex-col min-w-0 flex-1">
-            <h3 className="text-zinc-500 text-[8px] font-black uppercase tracking-[0.2em] truncate">
-              Trend: <span className="text-blue-500">{ejercicioSeleccionado}</span> <span className="text-zinc-700 ml-1">(RPE {rpeAuto})</span>
+        <div className="flex justify-between items-start mb-8 px-2">
+          <div className="flex flex-col">
+            <h3 className="text-zinc-500 text-[8px] font-black uppercase tracking-[0.2em]">
+              TENDENCIA <span className="text-blue-500">RM</span>
             </h3>
-            
-            {datosFiltrados.length > 0 && (
-              <span className="text-[7px] font-bold uppercase mt-1 flex items-center gap-1">
-                <span className="text-blue-400 text-[10px]">📊</span>
-                <span className="text-zinc-400">Métrica: Fuerza Estimada (Base 65kg)</span>
-              </span>
-            )}
+            <span className="text-white text-xl font-black italic uppercase tracking-tighter">EVOLUCIÓN</span>
           </div>
 
           {analisisSeleccionado && (
-            <div className={`text-[7px] font-black px-2 py-1 rounded-full border shrink-0 ${
-              analisisSeleccionado.valor_numerico >= 0 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-red-400 bg-red-500/10 border-red-500/20'
-            }`}>
-              {analisisSeleccionado.porcentaje}
+            <div className={`text-[7px] font-black px-2 py-1 rounded-full border ${analisisSeleccionado.valor_numerico >= 0 ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-red-400 bg-red-500/10 border-red-500/20'
+              }`}>
+              {analisisSeleccionado.porcentaje} TOTAL
             </div>
           )}
         </div>
 
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="70%">
           <LineChart data={datosFiltrados}>
             <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
             <XAxis
@@ -105,29 +96,27 @@ const GraficoProgreso = ({ records, analisis }) => {
                 return f[0].length === 4 ? `${f[2]}/${f[1]}` : `${f[0]}/${f[1]}`;
               }}
             />
-            <YAxis hide domain={['dataMin - 5', 'dataMax + 5']} />
-            
+            <YAxis hide domain={['dataMin - 10', 'dataMax + 10']} />
+
             <Tooltip
-              contentStyle={{ backgroundColor: '#09090b', border: '1px solid #27272a', borderRadius: '16px', fontSize: '10px', padding: '12px' }}
+              contentStyle={{ backgroundColor: '#09090b', border: '1px solid #27272a', borderRadius: '16px', fontSize: '10px' }}
               cursor={{ stroke: '#3f3f46', strokeWidth: 1 }}
               formatter={(value, name, props) => {
-                const { peso, reps } = props.payload;
+                const { peso, repeticiones, rpe } = props.payload;
                 return [
-                  <div key="fuerza" className="flex flex-col gap-1">
+                  <div key="rm" className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                      <span className="text-zinc-500 uppercase text-[8px]">Puntos Totales:</span>
-                      <span className="text-white font-black">{value.toFixed(1)} Pts</span>
+                      <span className="text-zinc-500 uppercase text-[8px]">RM Estimado:</span>
+                      <span className="text-white font-black">{value.toFixed(1)} kg</span>
                     </div>
-                    <div className="flex items-center gap-2 border-t border-white/5 pt-1 mt-1">
-                      <span className="text-zinc-500 uppercase text-[8px]">Carga Real:</span>
-                      <span className="text-blue-400 font-bold">{peso > 0 ? `+${peso}kg` : 'Autocarga'}</span>
+                    <div className="flex items-center gap-2 border-t border-white/5 pt-1 mt-1 text-blue-400 font-bold">
+                      Serie: {peso}kg x {repeticiones} <span className="text-zinc-500 font-normal ml-1">(RPE {rpe})</span>
                     </div>
-                    <div className="text-zinc-600 text-[8px] italic">{reps} repeticiones al RPE {rpeAuto}</div>
                   </div>
                 ];
               }}
             />
-            
+
             <Line
               type="monotone"
               dataKey="puntosFuerza"

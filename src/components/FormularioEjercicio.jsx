@@ -1,18 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 
-const FormularioEjercicio = ({ onEnviar }) => {
+// Añadimos userId como prop por si necesitas usarlo internamente
+const FormularioEjercicio = ({ onEnviar, userId }) => {
     const hoy = new Date().toISOString().split('T')[0];
     const [mostrarNotificacion, setMostrarNotificacion] = useState(false);
-    const [errorMsg, setErrorMsg] = useState(''); // Estado para el mensaje de error
+    const [errorMsg, setErrorMsg] = useState('');
     const [enviando, setEnviando] = useState(false);
 
     const [formData, setFormData] = useState({
         ejercicio: '',
-        peso: '0',
+        peso: '',
+        tuPeso: '65', 
         repeticiones: '',
         rpe: '8',
         fecha: hoy
     });
+
+    const rmEstimado = useMemo(() => {
+        const pBarra = parseFloat(formData.peso) || 0;
+        const pCuerpo = parseFloat(formData.tuPeso) || 0;
+        const r = parseInt(formData.repeticiones) || 0;
+        const pesoTotal = pBarra + pCuerpo;
+
+        if (pesoTotal > 0 && r > 0) {
+            return (pesoTotal * (1 + r / 30)).toFixed(1);
+        }
+        return "0.0";
+    }, [formData.peso, formData.tuPeso, formData.repeticiones]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,36 +35,35 @@ const FormularioEjercicio = ({ onEnviar }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setEnviando(true);
-        setErrorMsg(''); // Limpiamos errores previos
+        setErrorMsg('');
 
         try {
+            // Enviamos todo el objeto incluyendo explícitamente el user_id
             await onEnviar({
                 ...formData,
+                user_id: userId, // ID proveniente de Supabase Auth
                 peso: Number(formData.peso),
+                peso_corporal: Number(formData.tuPeso),
                 repeticiones: Number(formData.repeticiones),
                 rpe: Number(formData.rpe),
+                rm: Number(rmEstimado)
             });
 
-            // ÉXITO
-            if ("vibrate" in navigator) navigator.vibrate(50);
+            if ("vibrate" in navigator) navigator.vibrate([30, 50, 30]);
             setMostrarNotificacion(true);
             setTimeout(() => setMostrarNotificacion(false), 3000);
 
-            setFormData({
+            setFormData(prev => ({
+                ...prev,
                 ejercicio: '',
                 peso: '',
                 repeticiones: '',
                 rpe: '8',
                 fecha: hoy
-            });
+            }));
 
         } catch (error) {
-            // FALLO: Capturamos el mensaje que lanzamos en n8n o gymApi
-
-            console.error("Error al registrar:", error);
-            setErrorMsg(error.message || "Error inesperado al conectar con el servidor");
-
-            // Auto-cerrar el error después de 5 segundos
+            setErrorMsg(error.message || "Error al conectar con el servidor");
             setTimeout(() => setErrorMsg(''), 5000);
         } finally {
             setEnviando(false);
@@ -59,100 +72,100 @@ const FormularioEjercicio = ({ onEnviar }) => {
 
     return (
         <div className="w-full max-w-md mx-auto relative px-4">
-
-            {/* TOAST DE ÉXITO (Verde) */}
-            <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 transform ${mostrarNotificacion ? 'translate-y-0 opacity-100' : '-translate-y-12 opacity-0 pointer-events-none'}`}>
-                <div className="bg-emerald-500 text-white px-6 py-3 rounded-2xl shadow-lg flex items-center gap-3 border border-white/20">
-                    <span className="text-xs font-black uppercase tracking-widest">Serie Guardada ⚡</span>
+            {/* NOTIFICACIONES */}
+            <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ${mostrarNotificacion ? 'translate-y-0 opacity-100' : '-translate-y-12 opacity-0'}`}>
+                <div className="bg-emerald-500 text-white px-6 py-3 rounded-2xl shadow-lg font-black text-[10px] uppercase tracking-widest border border-white/20">
+                    RM Actualizado ⚡
                 </div>
             </div>
 
-            {/* TOAST DE ERROR (Rojo) */}
-            <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 transform ${errorMsg ? 'translate-y-0 opacity-100' : '-translate-y-12 opacity-0 pointer-events-none'}`}>
-                <div className="bg-red-600 text-white px-6 py-3 rounded-2xl shadow-xl flex flex-col items-center border border-white/20 min-w-[280px]">
-                    <span className="text-[10px] font-black uppercase opacity-70">Error de Registro</span>
-                    <span className="text-xs font-bold text-center italic">{errorMsg}</span>
-                </div>
-            </div>
-
-            <form
-                onSubmit={handleSubmit}
-                className="bg-zinc-950 p-6 rounded-[2rem] border border-white/10 shadow-2xl space-y-5"
-            >
-                {/* Header */}
-                <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                    <h2 className="text-xl font-black italic text-white uppercase tracking-tighter">
-                        New <span className="text-blue-500">Set</span>
-                    </h2>
-                    {enviando && <div className="h-2 w-2 bg-blue-500 rounded-full animate-ping"></div>}
+            <form onSubmit={handleSubmit} className="bg-zinc-950 p-4 rounded-[2.5rem] border border-white/10 shadow-2xl space-y-4">
+                {/* Visualizador de RM Dinámico */}
+                <div className="bg-blue-600/10 border border-blue-500/20 rounded-3xl p-2 flex flex-col items-center justify-center">
+                    <span className="text-[8px] font-black text-blue-500 uppercase tracking-[0.2em] mb-1">Potencial Estimado (1RM TOTAL)</span>
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-xl font-black text-white italic tracking-tighter">{rmEstimado}</span>
+                        <span className="text-xs font-bold text-blue-500 italic">KG</span>
+                    </div>
                 </div>
 
-                {/* Ejercicio + Fecha */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="flex-1">
-                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">Ejercicio</label>
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest block mb-1 ml-1">Ejercicio</label>
                         <input
                             required type="text" name="ejercicio"
                             value={formData.ejercicio} onChange={handleChange}
-                            placeholder="Ej: Press Banca"
-                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm text-white outline-none focus:border-blue-500"
+                            placeholder="Ej: Sentadilla Zumo"
+                            className="w-full bg-zinc-900 border border-white/5 rounded-2xl p-2 text-sm text-white outline-none focus:border-blue-500/50 transition-all"
                         />
                     </div>
-                    <div className="w-full sm:w-40">
-                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">
-                            Fecha
+
+                    <div className="grid grid-cols-2 gap-2">
+                        <div>
+                            <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest block mb-2 ml-1">Peso Barra</label>
+                            <input
+                                required type="number" name="peso" step="0.5"
+                                value={formData.peso} onChange={handleChange}
+                                placeholder="0"
+                                className="w-full bg-zinc-900 border border-white/5 rounded-2xl p-2 text-lg font-black text-white outline-none focus:border-blue-500/50"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest block mb-2 ml-1">Repeticiones</label>
+                            <input
+                                required type="number" name="repeticiones"
+                                value={formData.repeticiones} onChange={handleChange}
+                                placeholder="0"
+                                className="w-full bg-zinc-900 border border-white/5 rounded-2xl p-2 text-lg font-black text-white outline-none focus:border-blue-500/50"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-1 transition-all focus-within:border-blue-500/40">
+                        <label className="text-[9px] font-black text-blue-500/70 uppercase tracking-widest block  ml-1 text-center">
+                            Tu Peso Corporal (Base)
                         </label>
+                        <div className="relative">
+                            <input
+                                required
+                                type="number"
+                                name="tuPeso"
+                                step="0.1"
+                                value={formData.tuPeso}
+                                onChange={handleChange}
+                                className="w-full bg-transparent text-2xl font-black text-white text-center outline-none"
+                            />
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-blue-500/40 uppercase">KG</span>
+                        </div>
+                    </div>
+
+                    <div className="bg-zinc-900/50 rounded-2xl border border-white/5 p-3">
+                        <div className="flex justify-between items-center mb-3">
+                            <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Esfuerzo (RPE)</label>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${Number(formData.rpe) >= 9 ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}>
+                                {formData.rpe}
+                            </span>
+                        </div>
                         <input
-                            required type="date" name="fecha"
-                            value={formData.fecha} onChange={handleChange}
-                            className="input-fecha-gym w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 text-[11px] text-blue-500 outline-none uppercase min-h-[48px] flex-1 min-w-0"
+                            type="range" min="5" max="10" step="0.5" name="rpe"
+                            value={formData.rpe} onChange={handleChange}
+                            className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-blue-500 mb-2"
                         />
+                        <p className="text-[8px] text-zinc-500 font-bold uppercase text-center italic">
+                            {formData.rpe === '10' ? 'Fallo muscular o técnica rota' : formData.rpe >= '8' ? 'Cerca del fallo (1-2 reps extra)' : 'Moderado'}
+                        </p>
                     </div>
                 </div>
 
-                {/* Carga + Repes */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">Carga (kg)</label>
-                        <input
-                            required type="number" name="peso" step="0.1"
-                            value={formData.peso} onChange={handleChange}
-                            placeholder="0.0"
-                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm font-bold text-white outline-none focus:border-blue-500"
-                        />
-                    </div>
-                    <div>
-                        <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">Repes</label>
-                        <input
-                            required type="number" name="repeticiones"
-                            value={formData.repeticiones} onChange={handleChange}
-                            placeholder="0"
-                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm font-bold text-white outline-none focus:border-blue-500"
-                        />
-                    </div>
-                </div>
-
-                {/* RPE Selector */}
-                <div className="bg-zinc-900/50 rounded-xl border border-zinc-800 p-2 flex items-center gap-4">
-                    <input
-                        type="range" min="5" max="10" step="1" name="rpe"
-                        value={formData.rpe} onChange={handleChange}
-                        className="flex-1 h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                    />
-                    <div className={`shrink-0 w-16 text-center text-[11px] font-black py-2 rounded-lg ${Number(formData.rpe) >= 9 ? 'bg-red-600' : 'bg-blue-600'} text-white`}>
-                        RPE {formData.rpe}
-                    </div>
-                </div>
-
-                {/* Botón Principal */}
                 <button
                     type="submit"
                     disabled={enviando}
-                    className={`w-full rounded-xl py-4 font-black text-white transition-all shadow-lg flex items-center justify-center gap-2 ${enviando ? 'bg-zinc-800 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500 active:scale-95 shadow-blue-900/20'}`}
+                    className={`w-full rounded-2xl py-4 font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-xl flex items-center justify-center gap-3 ${enviando ? 'bg-zinc-800 text-zinc-600' : 'bg-white text-black hover:bg-blue-500 hover:text-white active:scale-95'}`}
                 >
-                    {enviando ? 'PROCESANDO...' : 'REGISTRAR SERIE ⚡'}
+                    {enviando ? 'Guardando...' : 'Guardar ⚡'}
                 </button>
             </form>
+            {errorMsg && <p className="text-red-500 text-[10px] text-center mt-4 font-bold uppercase">{errorMsg}</p>}
         </div>
     );
 };

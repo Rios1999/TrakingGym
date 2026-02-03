@@ -1,26 +1,40 @@
 import { useState, useEffect } from 'react';
+import { supabase } from './lib/supabase'; // Asegúrate de crear este archivo
 import { gymApi } from './api/gymApi';
 import FormularioEjercicio from './components/FormularioEjercicio';
 import CoachAnalysis from './components/CoachAnalysis';
 import EjercicioHistorial from './components/EjercicioHistorial';
-import ViewRecords from './components/ViewRecords'; // Importamos
+import ViewRecords from './components/ViewRecords';
+import { Auth } from './components/Auth'; // Importamos tu nuevo componente de Login
 
 function App() {
-  //tiene que seleccionar el ejercicio y el RPE
-  const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState({ ejercicio: "", rpe: "" })
+  // Estado de sesión de Supabase
+  const [session, setSession] = useState(null);
 
-  //datos
+  const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState({ userId: session?.user.id, ejercicio: "", rpe: "" });
   const [analisis, setAnalisis] = useState(null);
   const [records, setRecords] = useState(null);
-  //variables de control
   const [activeTab, setActiveTab] = useState('add');
   const [loading, setLoading] = useState(false);
 
+  // Escuchar cambios de autenticación
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const manejarConsulta = async () => {
     setLoading(true);
     try {
-      const datos = await gymApi.getStats();
+      // Pasamos el ID del usuario para que n8n/Supabase filtre sus datos
+      const datos = await gymApi.getStats(session.user.id);
       setAnalisis(datos);
     } catch (err) {
       console.error("Error", err);
@@ -31,7 +45,12 @@ function App() {
 
   const guardarEnSheets = async (datos) => {
     try {
-      await gymApi.registrarSerie(datos);
+      // Inyectamos el user_id de la sesión actual antes de enviar
+      const datosCompletos = {
+        ...datos,
+        user_id: session.user.id
+      };
+      await gymApi.registrarSerie(datosCompletos);
     } catch (error) {
       console.log("Error al guardar", error);
       throw error;
@@ -41,8 +60,7 @@ function App() {
   const cargarRecords = async () => {
     setLoading(true);
     try {
-      // Llamamos al nuevo método que configuramos
-      const datos = await gymApi.getRecords();
+      const datos = await gymApi.getRecords(session.user.id);
       setRecords(datos);
     } catch (err) {
       console.error("Error al cargar récords:", err);
@@ -53,29 +71,74 @@ function App() {
 
 
   useEffect(() => {
-    if (activeTab === 'view' && !records) {
+    if (session && activeTab === 'view' && !records) {
       cargarRecords();
     }
-  }, [activeTab]);
+  }, [activeTab, session]);
+
+  // Si no hay sesión iniciada, mostramos la pantalla de Auth
+  if (!session) {
+    return <Auth />;
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans">
-      <header className="p-6 flex justify-between items-center max-w-md mx-auto">
-        <h1 className="text-5xl font-black italic tracking-tighter">
-          GYM<span className="text-blue-600">FLOW</span>
-        </h1>
+      <header className="flex items-center justify-between py-2 px-4 border-b border-white/5 mb-2">
+        {/* Sección Izquierda: Usuario / Info Técnica */}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" /> {/* Indicador de status */}
+            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] leading-none">
+              Active Session
+            </span>
+          </div>
+          <h1 className="text-xl font-black italic text-white uppercase tracking-tighter leading-none">
+            {session.user.email.split('@')[0]}
+          </h1>
+        </div>
+
+        {/* Sección Derecha: Botón de Salida Cuadrado */}
+        <button
+          onClick={() => supabase.auth.signOut()}
+          className="group relative p-3 bg-zinc-900/50 border border-white/10 rounded-xl hover:border-red-500/50 hover:bg-red-500/5 transition-all active:scale-95"
+          title="Cerrar Sesión"
+        >
+          {/* Icono de Power / Salida */}
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="square"
+            className="text-zinc-500 group-hover:text-red-500 transition-colors"
+          >
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+
+          {/* Tooltip opcional muy pequeño */}
+          <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[7px] font-black text-red-500 opacity-0 group-hover:opacity-100 uppercase tracking-widest transition-opacity">
+            Logout
+          </span>
+        </button>
       </header>
 
       <main className="max-w-md mx-auto px-4 pb-24">
         <div className="min-h-[400px]">
-          {activeTab === 'add' && <FormularioEjercicio onEnviar={guardarEnSheets} />}
+          {activeTab === 'add' && (
+            <FormularioEjercicio
+              onEnviar={guardarEnSheets}
+              userId={session.user.id}
+            />
+          )}
 
           {activeTab === 'view' && (
-            // LÓGICA DE NAVEGACIÓN INTERNA
             ejercicioSeleccionado.ejercicio === "" ? (
               <ViewRecords
                 respuesta={records}
-                // Al pinchar, guardamos el objeto con ejercicio y RPE
                 onSelectEjercicio={(nombre, rpe) => setEjercicioSeleccionado({ ejercicio: nombre, rpe: rpe })}
               />
             ) : (
@@ -83,6 +146,7 @@ function App() {
                 nombreEjercicio={ejercicioSeleccionado.ejercicio}
                 rpeFiltrado={ejercicioSeleccionado.rpe}
                 onVolver={() => setEjercicioSeleccionado({ ejercicio: "", rpe: "" })}
+                userId={session.user.id}
               />
             )
           )}
@@ -114,5 +178,3 @@ const TabButton = ({ active, onClick, label, icon }) => (
 );
 
 export default App;
-
-
