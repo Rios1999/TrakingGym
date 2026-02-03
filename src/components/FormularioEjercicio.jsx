@@ -10,7 +10,7 @@ const FormularioEjercicio = ({ onEnviar, userId }) => {
     const [formData, setFormData] = useState({
         ejercicio: '',
         peso: '',
-        tuPeso: '65', 
+        tuPeso: '65',
         repeticiones: '',
         rpe: '8',
         fecha: hoy
@@ -20,13 +20,24 @@ const FormularioEjercicio = ({ onEnviar, userId }) => {
         const pBarra = parseFloat(formData.peso) || 0;
         const pCuerpo = parseFloat(formData.tuPeso) || 0;
         const r = parseInt(formData.repeticiones) || 0;
-        const pesoTotal = pBarra + pCuerpo;
 
-        if (pesoTotal > 0 && r > 0) {
-            return (pesoTotal * (1 + r / 30)).toFixed(1);
+        // Convertimos a minúsculas para que no importe si escriben "Dominadas" o "dominadas"
+        const nombreEj = (formData.ejercicio || "").toLowerCase();
+
+        // Lista de ejercicios donde SÍ queremos sumar el peso corporal
+        const ejerciciosAutocarga = ["dominadas", "fondos", "flexiones", "pull ups", "dips","muscle up","chin ups","domindas supinas","zancadas","australiana"];
+
+        // Lógica: Si el nombre está en la lista, sumamos. Si no, solo usamos la barra.
+        const esAutocarga = ejerciciosAutocarga.some(ej => nombreEj.includes(ej));
+        const pesoEfectivo = esAutocarga ? (pBarra + pCuerpo) : pBarra;
+
+        if (pesoEfectivo > 0 && r > 0) {
+            return (pesoEfectivo * (1 + r / 30)).toFixed(1);
         }
         return "0.0";
-    }, [formData.peso, formData.tuPeso, formData.repeticiones]);
+
+        // Añadimos formData.ejercicio a las dependencias para que el cálculo cambie al escribir el nombre
+    }, [formData.peso, formData.tuPeso, formData.repeticiones, formData.ejercicio]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
