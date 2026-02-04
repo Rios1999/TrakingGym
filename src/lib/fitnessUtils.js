@@ -6,10 +6,13 @@
  * @param {number|string} reps - Repeticiones realizadas
  * @returns {string} - RM calculado con un decimal
  */
-export const calcularRmEpley = (ejercicio, peso, tuPeso, reps) => {
+export const calcularRmEpley = (ejercicio, peso, tuPeso, reps , rpe) => {
     const pBarra = parseFloat(peso) || 0;
     const pCuerpo = parseFloat(tuPeso) || 0;
     const r = parseInt(reps) || 0;
+    const rp = parseFloat(rpe) || 0;
+
+    const rVirtuales = (r + (10 - rp))
     
     const nombreEj = (ejercicio || "").toLowerCase();
 
@@ -24,7 +27,7 @@ export const calcularRmEpley = (ejercicio, peso, tuPeso, reps) => {
     const pesoEfectivo = esAutocarga ? (pBarra + pCuerpo) : pBarra;
 
     if (pesoEfectivo > 0 && r > 0) {
-        return (pesoEfectivo * (1 + r / 30)).toFixed(1);
+        return (pesoEfectivo * (1 + rVirtuales / 30)).toFixed(1);
     }
     
     return "0.0";

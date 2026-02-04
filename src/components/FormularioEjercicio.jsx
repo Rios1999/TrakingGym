@@ -7,6 +7,7 @@ import { gymApi } from '../api/gymApi';
 const FormularioEjercicio = ({ userId }) => {
     const hoy = new Date().toISOString().split('T')[0];
     const [enviando, setEnviando] = useState(false);
+    const [cargandoPeso,setCargandoPeso] = useState(false);
 
     const [formData, setFormData] = useState({
         ejercicio: '',
@@ -22,6 +23,7 @@ const FormularioEjercicio = ({ userId }) => {
         const fetchUltimoRegistro = async () => {
             if (!userId) return;
 
+            setCargandoPeso(true);
             try {
                 const ultimo = await gymApi.getUltimoRegistro(userId);
                 const pesoCuerpo = ultimo?.ultimoPeso;
@@ -32,13 +34,15 @@ const FormularioEjercicio = ({ userId }) => {
 
             } catch (err) {
                 console.error("Error al traer el peso:", err);
+            } finally {
+                setCargandoPeso(false);
             }
         }
 
         fetchUltimoRegistro();
     }, [userId]);
 
-    const rmEstimado = calcularRmEpley(formData.ejercicio, formData.peso, formData.tuPeso, formData.repeticiones);
+    const rmEstimado = calcularRmEpley(formData.ejercicio, formData.peso, formData.tuPeso, formData.repeticiones, formData.rpe);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -127,7 +131,7 @@ const FormularioEjercicio = ({ userId }) => {
 
                     <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-1 transition-all focus-within:border-blue-500/40">
                         <label className="text-[9px] font-black text-blue-500/70 uppercase tracking-widest block  ml-1 text-center">
-                            Tu Peso Corporal (Base)
+                            {cargandoPeso ? 'Sincronizando peso...' : 'Tu Peso Corporal (Base)'}
                         </label>
                         <div className="relative">
                             <input
@@ -135,7 +139,7 @@ const FormularioEjercicio = ({ userId }) => {
                                 type="number"
                                 name="tuPeso"
                                 step="0.1"
-                                value={formData.tuPeso}
+                                value={cargandoPeso ? '' : formData.tuPeso}
                                 onChange={handleChange}
                                 className="w-full bg-transparent text-2xl font-black text-white text-center outline-none"
                             />
