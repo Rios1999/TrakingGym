@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState,useEffect, useMemo } from 'react';
 
 // Sub-componente para el efecto de carga
 const SkeletonCard = () => (

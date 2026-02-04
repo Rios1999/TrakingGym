@@ -6,6 +6,7 @@ import CoachAnalysis from './components/CoachAnalysis';
 import EjercicioHistorial from './components/EjercicioHistorial';
 import ViewRecords from './components/ViewRecords';
 import { Auth } from './components/Auth'; // Importamos tu nuevo componente de Login
+import { Toaster,toast } from 'react-hot-toast';
 
 function App() {
   // Estado de sesión de Supabase
@@ -61,20 +62,6 @@ function App() {
     }
   };
 
-  const guardarEnSheets = async (datos) => {
-    try {
-      // Inyectamos el user_id de la sesión actual antes de enviar
-      const datosCompletos = {
-        ...datos,
-        user_id: session.user.id
-      };
-      await gymApi.registrarSerie(datosCompletos);
-    } catch (error) {
-      console.log("Error al guardar", error);
-      throw error;
-    }
-  };
-
   const cargarRecords = async () => {
     setLoading(true);
     try {
@@ -86,7 +73,6 @@ function App() {
       setLoading(false);
     }
   };
-
 
   //escuchador para ir cargando los datos
   useEffect(() => {
@@ -103,6 +89,35 @@ function App() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans">
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{
+          // Definir estilos por defecto
+          style: {
+            background: '#18181b', // zinc-900
+            color: '#fff',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            borderRadius: '16px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+          },
+          // Personalizar tipos específicos
+          success: {
+            iconTheme: {
+              primary: '#3b82f6', // azul para que pegue con tu app
+              secondary: '#fff',
+            },
+          },
+          error: {
+            style: {
+              border: '1px solid #ef4444',
+            },
+          },
+        }}
+      />
       <header className="flex items-center justify-between py-2 px-4 border-b border-white/5 mb-2">
         {/* Sección Izquierda: Usuario / Info Técnica */}
         <div className="flex flex-col gap-1">
@@ -119,7 +134,7 @@ function App() {
 
         {/* Sección Derecha: Botón de Salida Cuadrado */}
         <button
-          onClick={() => {resetForm(),supabase.auth.signOut()}}
+          onClick={() => { resetForm(), supabase.auth.signOut() }}
           className="group relative p-3 bg-zinc-900/50 border border-white/10 rounded-xl hover:border-red-500/50 hover:bg-red-500/5 transition-all active:scale-95"
           title="Cerrar Sesión"
         >
@@ -150,7 +165,6 @@ function App() {
         <div className="min-h-[400px]">
           {activeTab === 'add' && (
             <FormularioEjercicio
-              onEnviar={guardarEnSheets}
               userId={session.user.id}
             />
           )}

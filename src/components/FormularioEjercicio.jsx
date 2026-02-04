@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
+import { calcularRmEpley } from '../lib/fitnessUtils';
+import { toast } from 'react-hot-toast';
+import { gymApi } from '../api/gymApi';
 
 // Añadimos userId como prop por si necesitas usarlo internamente
-const FormularioEjercicio = ({ onEnviar, userId }) => {
+const FormularioEjercicio = ({ userId }) => {
     const hoy = new Date().toISOString().split('T')[0];
-    const [mostrarNotificacion, setMostrarNotificacion] = useState(false);
-    const [errorMsg, setErrorMsg] = useState('');
     const [enviando, setEnviando] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -16,28 +17,28 @@ const FormularioEjercicio = ({ onEnviar, userId }) => {
         fecha: hoy
     });
 
-    const rmEstimado = useMemo(() => {
-        const pBarra = parseFloat(formData.peso) || 0;
-        const pCuerpo = parseFloat(formData.tuPeso) || 0;
-        const r = parseInt(formData.repeticiones) || 0;
+    //coger ultimo peso
+    useEffect(() => {
+        const fetchUltimoRegistro = async () => {
+            if (!userId) return;
 
-        // Convertimos a minúsculas para que no importe si escriben "Dominadas" o "dominadas"
-        const nombreEj = (formData.ejercicio || "").toLowerCase();
+            try {
+                const ultimo = await gymApi.getUltimoRegistro(userId);
+                const pesoCuerpo = ultimo?.ultimoPeso;
+                setFormData(prev => ({
+                    ...prev,
+                    tuPeso: pesoCuerpo
+                }));
 
-        // Lista de ejercicios donde SÍ queremos sumar el peso corporal
-        const ejerciciosAutocarga = ["dominadas", "fondos", "flexiones", "pull ups", "dips","muscle up","chin ups","domindas supinas","zancadas","australiana"];
-
-        // Lógica: Si el nombre está en la lista, sumamos. Si no, solo usamos la barra.
-        const esAutocarga = ejerciciosAutocarga.some(ej => nombreEj.includes(ej));
-        const pesoEfectivo = esAutocarga ? (pBarra + pCuerpo) : pBarra;
-
-        if (pesoEfectivo > 0 && r > 0) {
-            return (pesoEfectivo * (1 + r / 30)).toFixed(1);
+            } catch (err) {
+                console.error("Error al traer el peso:", err);
+            }
         }
-        return "0.0";
 
-        // Añadimos formData.ejercicio a las dependencias para que el cálculo cambie al escribir el nombre
-    }, [formData.peso, formData.tuPeso, formData.repeticiones, formData.ejercicio]);
+        fetchUltimoRegistro();
+    }, [userId]);
+
+    const rmEstimado = calcularRmEpley(formData.ejercicio, formData.peso, formData.tuPeso, formData.repeticiones);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -45,12 +46,12 @@ const FormularioEjercicio = ({ onEnviar, userId }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setEnviando(true);
-        setErrorMsg('');
+        setEnviando(true)
+        const loadingToast = toast.loading('Guardando en la nube... ☁️');
 
         try {
             // Enviamos todo el objeto incluyendo explícitamente el user_id
-            await onEnviar({
+            await gymApi.registrarSerie({
                 ...formData,
                 user_id: userId, // ID proveniente de Supabase Auth
                 peso: Number(formData.peso),
@@ -61,8 +62,7 @@ const FormularioEjercicio = ({ onEnviar, userId }) => {
             });
 
             if ("vibrate" in navigator) navigator.vibrate([30, 50, 30]);
-            setMostrarNotificacion(true);
-            setTimeout(() => setMostrarNotificacion(false), 3000);
+            toast.success('¡Entrenamiento guardado!', { id: loadingToast });
 
             setFormData(prev => ({
                 ...prev,
@@ -74,8 +74,7 @@ const FormularioEjercicio = ({ onEnviar, userId }) => {
             }));
 
         } catch (error) {
-            setErrorMsg(error.message || "Error al conectar con el servidor");
-            setTimeout(() => setErrorMsg(''), 5000);
+            toast.error(error.message, { id: loadingToast });
         } finally {
             setEnviando(false);
         }
@@ -83,12 +82,6 @@ const FormularioEjercicio = ({ onEnviar, userId }) => {
 
     return (
         <div className="w-full max-w-md mx-auto relative px-4">
-            {/* NOTIFICACIONES */}
-            <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ${mostrarNotificacion ? 'translate-y-0 opacity-100' : '-translate-y-12 opacity-0'}`}>
-                <div className="bg-emerald-500 text-white px-6 py-3 rounded-2xl shadow-lg font-black text-[10px] uppercase tracking-widest border border-white/20">
-                    RM Actualizado ⚡
-                </div>
-            </div>
 
             <form onSubmit={handleSubmit} className="bg-zinc-950 p-4 rounded-[2.5rem] border border-white/10 shadow-2xl space-y-4">
                 {/* Visualizador de RM Dinámico */}
@@ -173,10 +166,9 @@ const FormularioEjercicio = ({ onEnviar, userId }) => {
                     disabled={enviando}
                     className={`w-full rounded-2xl py-4 font-black text-[11px] uppercase tracking-[0.2em] transition-all shadow-xl flex items-center justify-center gap-3 ${enviando ? 'bg-zinc-800 text-zinc-600' : 'bg-white text-black hover:bg-blue-500 hover:text-white active:scale-95'}`}
                 >
-                    {enviando ? 'Guardando...' : 'Guardar ⚡'}
+                    Guardar ⚡
                 </button>
             </form>
-            {errorMsg && <p className="text-red-500 text-[10px] text-center mt-4 font-bold uppercase">{errorMsg}</p>}
         </div>
     );
 };

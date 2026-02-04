@@ -37,7 +37,7 @@ export const gymApi = {
     if (!response.ok) {
       switch (response.status) {
         case 400:
-          throw new Error("Ejercicio no añadido en el diccionario, hable con el administrador");
+          throw new Error("Este ejercio no esta disponible, hable con el administrador");
         default:
           throw new Error("Error al registrar la serie en n8n");
       }
