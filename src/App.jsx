@@ -69,35 +69,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans">
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
-        toastOptions={{
-          // Definir estilos por defecto
-          style: {
-            background: '#18181b', // zinc-900
-            color: '#fff',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            borderRadius: '16px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-          },
-          // Personalizar tipos específicos
-          success: {
-            iconTheme: {
-              primary: '#3b82f6', // azul para que pegue con tu app
-              secondary: '#fff',
-            },
-          },
-          error: {
-            style: {
-              border: '1px solid #ef4444',
-            },
-          },
-        }}
-      />
       <header className="flex items-center justify-between py-2 px-4 border-b border-white/5 mb-2">
         {/* Sección Izquierda: Usuario / Info Técnica */}
         <div className="flex flex-col gap-1">
@@ -114,7 +85,11 @@ function App() {
 
         {/* Sección Derecha: Botón de Salida Cuadrado */}
         <button
-          onClick={() => { resetForm(), supabase.auth.signOut() }}
+          onClick={() => {
+            resetForm(), supabase.auth.signOut(), toast('Sesión finalizada', {
+              icon: '📤', // Flecha de salida
+            });
+          }}
           className="group relative p-3 bg-zinc-900/50 border border-white/10 rounded-xl hover:border-red-500/50 hover:bg-red-500/5 transition-all active:scale-95"
           title="Cerrar Sesión"
         >
