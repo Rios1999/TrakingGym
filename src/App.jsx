@@ -6,7 +6,7 @@ import CoachAnalysis from './components/CoachAnalysis';
 import EjercicioHistorial from './components/EjercicioHistorial';
 import ViewRecords from './components/ViewRecords';
 import { Auth } from './components/Auth'; // Importamos tu nuevo componente de Login
-import { Toaster,toast } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 
 function App() {
   // Estado de sesión de Supabase
@@ -61,26 +61,6 @@ function App() {
       setLoading(false);
     }
   };
-
-  const cargarRecords = async () => {
-    setLoading(true);
-    try {
-      const datos = await gymApi.getRecords(session.user.id);
-      setRecords(datos);
-    } catch (err) {
-      console.error("Error al cargar récords:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  //escuchador para ir cargando los datos
-  useEffect(() => {
-    if (session && activeTab === 'view' && !records) {
-      cargarRecords();
-    }
-  }, [activeTab, session]);
-
 
   // Si no hay sesión iniciada, mostramos la pantalla de Auth
   if (!session) {
@@ -172,7 +152,7 @@ function App() {
           {activeTab === 'view' && (
             ejercicioSeleccionado.ejercicio === "" ? (
               <ViewRecords
-                respuesta={records}
+                userId={session.user.id}
                 onSelectEjercicio={(nombre, rpe) => setEjercicioSeleccionado({ ejercicio: nombre, rpe: rpe })}
               />
             ) : (

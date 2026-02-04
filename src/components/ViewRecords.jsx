@@ -1,4 +1,5 @@
-import { useState,useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { gymApi } from '../api/gymApi';
 
 // Sub-componente para el efecto de carga
 const SkeletonCard = () => (
@@ -12,16 +13,32 @@ const SkeletonCard = () => (
   </div>
 );
 
-const ViewRecords = ({ respuesta, onSelectEjercicio }) => {
+const ViewRecords = ({ userId, onSelectEjercicio }) => {
   const [musculoAbierto, setMusculoAbierto] = useState("Pierna");
+  const [record, setRecord] = useState()
+
+  useEffect(() => {
+    const fetchRecord = async () => {
+      try {
+        const result = await gymApi.getRecords(userId)
+        setRecord(result)
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
+    if (userId) {
+      fetchRecord()
+    }
+  }, [])
 
   // Procesamiento de datos
   const categorias = useMemo(() => {
     // Si no hay respuesta, devolvemos null para activar el esqueleto
-    if (!respuesta || !respuesta.records) return null;
+    if (!record || !record.records) return null;
 
     const grupos = {};
-    respuesta.records.forEach(rec => {
+    record.records.forEach(rec => {
       const musculo = rec.musculo || "Otros";
       if (!grupos[musculo]) grupos[musculo] = {};
 
@@ -49,7 +66,7 @@ const ViewRecords = ({ respuesta, onSelectEjercicio }) => {
     const final = {};
     Object.keys(grupos).forEach(m => final[m] = Object.values(grupos[m]));
     return final;
-  }, [respuesta]);
+  }, [record]);
 
   const getRpeColor = (rpe) => {
     const n = Number(rpe);
@@ -76,7 +93,7 @@ const ViewRecords = ({ respuesta, onSelectEjercicio }) => {
     );
   }
 
-  if (respuesta?.records.length === 0) {
+  if (record?.records.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-6 text-center animate-in fade-in zoom-in duration-700">
         {/* Icono decorativo de pesa o aviso */}
