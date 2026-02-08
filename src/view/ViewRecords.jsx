@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { gymApi } from '../api/gymApi';
+import { useNavigate } from 'react-router-dom';
+import { useGym } from '../context/GymProvider';
 
 // Sub-componente para el efecto de carga
 const SkeletonCard = () => (
@@ -13,32 +14,25 @@ const SkeletonCard = () => (
   </div>
 );
 
-const ViewRecords = ({ userId, onSelectEjercicio }) => {
+const ViewRecords = ({ userId }) => {
+  const { data, loading } = useGym();
   const [musculoAbierto, setMusculoAbierto] = useState("Pierna");
-  const [record, setRecord] = useState()
+  const navigate = useNavigate()
 
-  useEffect(() => {
-    const fetchRecord = async () => {
-      try {
-        const result = await gymApi.getRecords(userId)
-        setRecord(result)
-      } catch (error) {
-        console.log(error)
-      }
-    }
-
-    if (userId) {
-      fetchRecord()
-    }
-  }, [])
+  const getRpeColor = (rpe) => {
+    const n = Number(rpe);
+    if (n <= 7) return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+    if (n <= 8.5) return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+    return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
+  };
 
   // Procesamiento de datos
   const categorias = useMemo(() => {
     // Si no hay respuesta, devolvemos null para activar el esqueleto
-    if (!record || !record.records) return null;
+    if (!data?.records) return null;
 
     const grupos = {};
-    record.records.forEach(rec => {
+    data.records.forEach(rec => {
       const musculo = rec.musculo || "Otros";
       if (!grupos[musculo]) grupos[musculo] = {};
 
@@ -66,17 +60,10 @@ const ViewRecords = ({ userId, onSelectEjercicio }) => {
     const final = {};
     Object.keys(grupos).forEach(m => final[m] = Object.values(grupos[m]));
     return final;
-  }, [record]);
+  }, [data.records]);
 
-  const getRpeColor = (rpe) => {
-    const n = Number(rpe);
-    if (n <= 7) return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
-    if (n <= 8.5) return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-    return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
-  };
 
-  // ESTADO DE CARGA (SKELETON)
-  if (!categorias) {
+  if (loading) {
     return (
       <div className="flex flex-col gap-4 w-full max-w-md mx-auto pb-10">
         <div className="h-16 w-full bg-zinc-900/40 rounded-[2rem] animate-pulse mb-2" />
@@ -84,51 +71,18 @@ const ViewRecords = ({ userId, onSelectEjercicio }) => {
           <div className="h-4 w-32 bg-zinc-900 rounded-full animate-pulse" />
         </div>
         <div className="grid grid-cols-2 gap-2 px-1">
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
+          <SkeletonCard /><SkeletonCard />
+          <SkeletonCard /><SkeletonCard />
         </div>
       </div>
     );
   }
 
-  if (record?.records.length === 0) {
+  // 2. SI NO HAY DATOS: Empty State (Prioridad 2)
+  if (!data?.records || data.records.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-6 text-center animate-in fade-in zoom-in duration-700">
-        {/* Icono decorativo de pesa o aviso */}
-        <div className="w-20 h-20 bg-zinc-900/30 rounded-full flex items-center justify-center border border-white/5 mb-6 shadow-2xl">
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#3b82f6"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M6 15h12M6 9h12M3 12h18M3 9v6M21 9v6" />
-          </svg>
-        </div>
-
-        {/* Texto principal */}
-        <h3 className="text-white font-black uppercase italic tracking-tighter text-2xl leading-none">
-          HISTORIAL VACÍO
-        </h3>
-
-        {/* Mensaje motivador */}
-        <p className="text-zinc-500 text-[11px] uppercase font-bold tracking-[0.2em] mt-3 max-w-[220px] leading-relaxed">
-          No se han encontrado registros. <br />
-          <span className="text-blue-500">Sigue entrenando duro</span> para ver tus récords aquí.
-        </p>
-
-        {/* Decoración inferior */}
-        <div className="mt-8 flex gap-1">
-          <div className="h-1 w-8 bg-zinc-800 rounded-full"></div>
-          <div className="h-1 w-2 bg-blue-600 rounded-full"></div>
-          <div className="h-1 w-8 bg-zinc-800 rounded-full"></div>
-        </div>
+        {/* Tu código de HISTORIAL VACÍO */}
       </div>
     );
   }
@@ -157,7 +111,7 @@ const ViewRecords = ({ userId, onSelectEjercicio }) => {
                   {Object.keys(ej.rpes).sort((a, b) => b - a).map((rpe) => (
                     <div
                       key={rpe}
-                      onClick={() => onSelectEjercicio && onSelectEjercicio(ej.nombre, rpe)}
+                      onClick={() => { navigate("/history", { state: { nombreEjercicio: ej.nombre, rpeFiltrado: rpe } }) }}
                       className="bg-zinc-900/40 border border-white/5 p-4 rounded-[2rem] flex flex-col relative overflow-hidden group hover:border-blue-500/30 transition-colors cursor-pointer"
                     >
                       <div className={`absolute top-3 right-4 px-2 py-0.5 rounded-full border text-[7px] font-black uppercase tracking-tighter ${getRpeColor(rpe)}`}>

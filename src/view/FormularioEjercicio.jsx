@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { calcularRmEpley } from '../lib/fitnessUtils';
 import { toast } from 'react-hot-toast';
 import { gymApi } from '../api/gymApi';
+import { useGym } from '../context/GymProvider';
 
 // Añadimos userId como prop por si necesitas usarlo internamente
 const FormularioEjercicio = ({ userId }) => {
+    const {enviarDatos} = useGym()
     const hoy = new Date().toISOString().split('T')[0];
     const [enviando, setEnviando] = useState(false);
     const [cargandoPeso,setCargandoPeso] = useState(false);
@@ -54,16 +56,7 @@ const FormularioEjercicio = ({ userId }) => {
         const loadingToast = toast.loading('Guardando en la nube... ☁️');
 
         try {
-            // Enviamos todo el objeto incluyendo explícitamente el user_id
-            await gymApi.registrarSerie({
-                ...formData,
-                user_id: userId, // ID proveniente de Supabase Auth
-                peso: Number(formData.peso),
-                peso_corporal: Number(formData.tuPeso),
-                repeticiones: Number(formData.repeticiones),
-                rpe: Number(formData.rpe),
-                rm: Number(rmEstimado)
-            });
+            await enviarDatos({...formData,rmEstimado})
 
             if ("vibrate" in navigator) navigator.vibrate([30, 50, 30]);
             toast.success('¡Entrenamiento guardado!', { id: loadingToast });
@@ -103,7 +96,7 @@ const FormularioEjercicio = ({ userId }) => {
                         <input
                             required type="text" name="ejercicio"
                             value={formData.ejercicio} onChange={handleChange}
-                            placeholder="Ej: Sentadilla Zumo"
+                            placeholder="Ej: Sentadilla Sumo"
                             className="w-full bg-zinc-900 border border-white/5 rounded-2xl p-2 text-sm text-white outline-none focus:border-blue-500/50 transition-all"
                         />
                     </div>

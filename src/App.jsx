@@ -1,40 +1,21 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase'; // Asegúrate de crear este archivo
 import { gymApi } from './api/gymApi';
-import FormularioEjercicio from './components/FormularioEjercicio';
-import CoachAnalysis from './components/CoachAnalysis';
-import EjercicioHistorial from './components/EjercicioHistorial';
-import ViewRecords from './components/ViewRecords';
+import FormularioEjercicio from './view/FormularioEjercicio';
+import CoachAnalysis from './view/CoachAnalysis';
+import EjercicioHistorial from './view/EjercicioHistorial';
+import ViewRecords from './view/ViewRecords';
 import { Auth } from './components/Auth'; // Importamos tu nuevo componente de Login
-import { Toaster, toast } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
+import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
+import { GymProvider } from './context/GymProvider';
+
 
 function App() {
   // Estado de sesión de Supabase
   const [session, setSession] = useState(null);
-
-  const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState({ userId: session?.user.id, ejercicio: "", rpe: "" });
-  const [analisis, setAnalisis] = useState(null);
-  const [records, setRecords] = useState(null);
-  const [activeTab, setActiveTab] = useState('add');
-  const [loading, setLoading] = useState(false);
-
-
-  const resetForm = () => {
-    // Restablecemos el ejercicio manteniendo el userId actual
-    setEjercicioSeleccionado({
-      userId: session?.user.id,
-      ejercicio: "",
-      rpe: ""
-    });
-
-    // Limpiamos los resultados de las consultas
-    setAnalisis(null);
-    setRecords(null);
-
-    // Volvemos a la pestaña inicial y quitamos estados de carga
-    setActiveTab('add');
-    setLoading(false);
-  };
+  const navigate = useNavigate();
+  const location = useLocation();
 
   // Escuchar cambios de autenticación
   useEffect(() => {
@@ -48,19 +29,6 @@ function App() {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const manejarConsulta = async () => {
-    setLoading(true);
-    try {
-      // Pasamos el ID del usuario para que n8n/Supabase filtre sus datos
-      const datos = await gymApi.getStats(session.user.id);
-      setAnalisis(datos);
-    } catch (err) {
-      console.error("Error", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Si no hay sesión iniciada, mostramos la pantalla de Auth
   if (!session) {
@@ -85,11 +53,7 @@ function App() {
 
         {/* Sección Derecha: Botón de Salida Cuadrado */}
         <button
-          onClick={() => {
-            resetForm(), supabase.auth.signOut(), toast('Sesión finalizada', {
-              icon: '📤', // Flecha de salida
-            });
-          }}
+          onClick={() => { supabase.auth.signOut(), toast('Sesión finalizada', { icon: '📤', }) }}
           className="group relative p-3 bg-zinc-900/50 border border-white/10 rounded-xl hover:border-red-500/50 hover:bg-red-500/5 transition-all active:scale-95"
           title="Cerrar Sesión"
         >
@@ -116,44 +80,51 @@ function App() {
         </button>
       </header>
 
-      <main className="max-w-md mx-auto px-4 pb-24">
-        <div className="min-h-[400px]">
-          {activeTab === 'add' && (
-            <FormularioEjercicio
-              userId={session.user.id}
-            />
-          )}
+      <GymProvider userId={session?.user?.id}>
+        <main className="max-w-md mx-auto px-4 pb-24">
+          {/* PESTAÑAS PERSISTENTES: Se mantienen montadas pero se ocultan con CSS */}
+          <div className={location.pathname === '/add' ? 'block' : 'hidden'}>
+            <FormularioEjercicio userId={session.user.id} />
+          </div>
 
-          {activeTab === 'view' && (
-            ejercicioSeleccionado.ejercicio === "" ? (
-              <ViewRecords
-                userId={session.user.id}
-                onSelectEjercicio={(nombre, rpe) => setEjercicioSeleccionado({ ejercicio: nombre, rpe: rpe })}
-              />
-            ) : (
-              <EjercicioHistorial
-                nombreEjercicio={ejercicioSeleccionado.ejercicio}
-                rpeFiltrado={ejercicioSeleccionado.rpe}
-                onVolver={() => setEjercicioSeleccionado({ ejercicio: "", rpe: "" })}
-                userId={session.user.id}
-              />
-            )
-          )}
+          <div className={location.pathname === '/view' ? 'block' : 'hidden'}>
+            <ViewRecords userId={session.user.id} />
+          </div>
 
-          {activeTab === 'analyze' && (
-            <CoachAnalysis
-              respuesta={analisis}
-              loading={loading}
-              onRefresh={manejarConsulta}
-            />
-          )}
-        </div>
-      </main>
+          <div className={location.pathname === '/analyze' ? 'block' : 'hidden'}>
+            <CoachAnalysis userId={session.user.id} />
+          </div>
+
+          {/* RUTAS DE NAVEGACIÓN REAL: Para páginas que no son pestañas principales */}
+          <Routes>
+            {/* Si entran a la raíz, el sistema los manda a /add y se activa el div de arriba */}
+            <Route path="/" element={<Navigate to="/add" />} />
+            <Route path="/add" element={null} />
+            <Route path="/view" element={null} />
+            <Route path="/analyze" element={null} />
+
+            {/* El historial sí se monta/desmonta normalmente */}
+            <Route path="/history" element={<EjercicioHistorial userId={session.user.id} />} />
+          </Routes>
+        </main>
+      </GymProvider>
 
       <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-2 flex justify-between shadow-2xl z-50">
-        <TabButton active={activeTab === 'add'} onClick={() => setActiveTab('add')} label="ADD" icon="⚡" />
-        <TabButton active={activeTab === 'view'} onClick={() => setActiveTab('view')} label="VIEW" icon="📊" />
-        <TabButton active={activeTab === 'analyze'} onClick={() => setActiveTab('analyze')} label="AI" icon="✨" />
+        <TabButton
+          active={location.pathname === '/add'}
+          onClick={() => navigate("/add")}
+          label="ADD" icon="⚡"
+        />
+        <TabButton
+          active={location.pathname === '/view' || location.pathname === '/history'}
+          onClick={() => navigate("/view")}
+          label="VIEW" icon="📊"
+        />
+        <TabButton
+          active={location.pathname === '/analyze'}
+          onClick={() => navigate("/analyze")}
+          label="ANALYZE" icon="✨"
+        />
       </nav>
     </div>
   );
