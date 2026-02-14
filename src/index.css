@@ -4,6 +4,8 @@
 @media screen and (max-width: 768px) {
   input[type="text"],
   input[type="number"],
+  input[type="email"],
+  input[type="password"],
   input[type="date"],
   textarea {
     font-size: 16px !important; /* Evita el zoom automático en iPhone */
