@@ -121,7 +121,6 @@ function App() {
               <span className="text-[8px] font-black text-zinc-700 uppercase tracking-widest">O registrar récord</span>
               <div className="h-px bg-white/5 flex-1" />
             </div>
-            <QuickLoadSelector />
           </div>
 
           <div className={location.pathname === '/view' ? 'block' : 'hidden'}>
