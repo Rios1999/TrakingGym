@@ -10,6 +10,7 @@ import { QuickLoadSelector } from './components/QuickLoadSelector';
 import { toast } from 'react-hot-toast';
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { GymProvider } from './context/GymProvider';
+import packageInfo from '../package.json';
 
 // --- NUEVO COMPONENTE PARA RESETEAR SCROLL ---
 function ScrollToTop() {
@@ -102,8 +103,8 @@ function App() {
             </button>
           ) : (
             <div className="flex flex-col items-end opacity-40 select-none">
-              <span className="text-[8px] font-black text-white tracking-[0.2em] leading-none">GYM-OS</span>
-              <span className="text-[7px] font-bold text-zinc-500 uppercase tracking-tighter mt-1">v.1.0.4</span>
+              <span className="text-[15px] font-black text-white tracking-[0.2em] leading-none">GYM-OS</span>
+              <span className="text-[14px] font-bold text-zinc-500 uppercase tracking-tighter mt-1">v.{packageInfo.version}</span>
             </div>
           )}
         </div>
