@@ -1,11 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { gymApi } from '../api/gymApi';
+import { useLocation,useNavigate } from 'react-router-dom';
 
-const EjercicioHistorial = ({ nombreEjercicio, rpeFiltrado, onVolver, userId }) => {
+const EjercicioHistorial = ({userId }) => {
     const [logs, setLogs] = useState([]);
     const [pagina, setPagina] = useState(1);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
+
+    const navigate = useNavigate()
+    const location = useLocation()
+
+    const {nombreEjercicio,rpeFiltrado} = location.state || {}
     
     // Referencia para detectar el final de la lista
     const observer = useRef();
@@ -69,11 +75,6 @@ const EjercicioHistorial = ({ nombreEjercicio, rpeFiltrado, onVolver, userId }) 
             
             {/* HEADER (Igual que antes) */}
             <div className="flex items-center justify-between mb-8 px-2">
-                <button onClick={onVolver} className="p-4 bg-zinc-900 rounded-[1.5rem] border border-white/5 text-zinc-400">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                        <path d="m15 18-6-6 6-6" />
-                    </svg>
-                </button>
                 <div className="text-right">
                     <span className="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em]">History RPE {rpeFiltrado}</span>
                     <h2 className="text-3xl font-black italic text-white uppercase tracking-tighter leading-none">{nombreEjercicio}</h2>
