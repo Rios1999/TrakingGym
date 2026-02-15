@@ -35,7 +35,7 @@ jobs:
           if [[ "$COMMIT_MSG" == *"feat:"* ]]; then
             echo "Nueva funcionalidad detectada (Minor)"
             npm version minor -m "chore: bump version to %s [skip ci]"
-          elif [[ "$COMMIT_MSG" == *"break"* ]]; then
+          elif [[ "$COMMIT_MSG" == *"BREAKING CHANGE"* ]]; then
             echo "Cambio crítico detectado (Major)"
             npm version major -m "chore: bump version to %s [skip ci]"
           else
