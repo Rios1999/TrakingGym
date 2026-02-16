@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
-import { gymApi } from './api/gymApi';
 import FormularioEjercicio from './view/FormularioEjercicio';
+import ViewEjercicio from './view/ViewEjercicio';
 import CoachAnalysis from './view/CoachAnalysis';
 import EjercicioHistorial from './view/EjercicioHistorial';
 import ViewRecords from './view/ViewRecords';
@@ -48,7 +48,7 @@ function App() {
 
   if (!session) return <Auth />;
 
-  const isSubPage = location.pathname === '/history' || location.pathname === '/view';
+  const isSubPage = location.pathname === '/history' || location.pathname === '/view' || location.pathname === '/view-ejercicio';
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans">
@@ -140,6 +140,7 @@ function App() {
             <Route path="/add" element={null} />
             <Route path="/view" element={null} />
             <Route path="/analyze" element={null} />
+            <Route path="/view-ejercicio" element={<ViewEjercicio />} />
           </Routes>
         </main>
       </GymProvider>

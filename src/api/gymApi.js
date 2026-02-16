@@ -23,6 +23,26 @@ export const gymApi = {
   },
 
   /**
+   * Obtiene la lista de ejercicios agrupados y paginados
+   * @param {number} page - Número de página para la paginación (default: 1)
+   */
+  getEjercicios: async (page = 1) => {
+    // Construimos la URL con los parámetros de paginación
+    const url = `${BASE_URL}/${produccion}/ecd855fb-cc55-46c7-8e61-a3edaf61b66b?page=${page}`;
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers
+    });
+
+    if (!response.ok) {
+      throw new Error("Error al obtener la lista de ejercicios (n8n)");
+    }
+
+    return await response.json();
+  },
+
+  /**
    * Guarda una nueva serie en Supabase
    * @param {object} datosSerie - Objeto con los datos del ejercicio incluyendo user_id
    */
