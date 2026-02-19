@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import GraficoProgreso from '../components/GraficoProgreso';
 import { getStats } from '../api/analisisApi';
 
@@ -44,7 +44,6 @@ const CoachAnalysis = ({ userId }) => {
             setLoading(false);
         }
     };
-
 
     const alertaFatiga = useMemo(() => {
         if (!analisis?.records || !ejercicioActivo) return null;

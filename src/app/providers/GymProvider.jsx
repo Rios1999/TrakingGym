@@ -9,7 +9,6 @@ export const GymProvider = ({ children, userId }) => {
     const [loading, setLoading] = useState(false);
 
     const fetchData = useCallback(async () => {
-
         if (!userId) return;
         setLoading(true);
         try {
@@ -29,6 +28,7 @@ export const GymProvider = ({ children, userId }) => {
         }
     }, [userId]);
 
+
     const enviarDatos = async (formData) => {
         const nuevaMarca = await registrarSerie({
             ...formData,
@@ -40,26 +40,48 @@ export const GymProvider = ({ children, userId }) => {
             rm: Number(formData.rm)
         });
 
-        if (nuevaMarca.status == 'success') {
-            setData(prevData => {
-                const listaActual = prevData?.data || [];
 
-                // Calcular el máximo id de todos los records existentes
-                const maxId = listaActual.length > 0 
-                    ? Math.max(...listaActual.map(r => r.id || 0)) 
-                    : 0;
-                const nuevoId = maxId + 1;
+
+        if (nuevaMarca) {
+            setData(prevData => {
+                const listaActual = prevData?.records || [];
+
+                // 1. Buscamos si ya existe el ejercicio en la lista
+                const indexEjercicio = listaActual.findIndex(
+                    item => item.ejercicio.toLowerCase() === nuevaMarca.ejercicio.toLowerCase()
+                );
+
+                let nuevasRecords;
+
+                if (indexEjercicio !== -1) {
+                    nuevasRecords = [...listaActual];
+
+                    // Añadimos el nuevo registro al principio del array records_por_rpe de ese ejercicio
+                    nuevasRecords[indexEjercicio] = {
+                        ...nuevasRecords[indexEjercicio],
+                        records_por_rpe: [
+                            ...nuevaMarca.records_por_rpe,
+                            ...(nuevasRecords[indexEjercicio].records_por_rpe || [])
+                        ]
+                    };
+                } else {
+                    const maxId = listaActual.length > 0
+                        ? Math.max(...listaActual.map(r => r.id || 0))
+                        : 0;
+
+                    const nuevoBloque = {
+                        id: maxId + 1,
+                        ejercicio: nuevaMarca.ejercicio,
+                        records_por_rpe: [...nuevaMarca.records_por_rpe]
+                    };
+
+                    // Lo añadimos al principio de la lista de records
+                    nuevasRecords = [nuevoBloque, ...listaActual];
+                }
 
                 return {
                     ...prevData,
-                    records: [
-                        {
-                            id: nuevoId,
-                            ejercicio: nuevaMarca.ejercicio,
-                            records_por_rpe: nuevaMarca.records_por_rpe
-                        },
-                        ...listaActual
-                    ]
+                    records: nuevasRecords
                 };
             });
         }

@@ -28,7 +28,7 @@ const ViewRecords = () => {
 
   const categorias = useMemo(() => {
     if (!data?.records || data.records.length === 0) return null;
-    
+
     const grupos = {};
 
     data.records.forEach(item => {
@@ -41,12 +41,18 @@ const ViewRecords = () => {
       const ejercicioProcesado = {
         nombre: item.ejercicio,
         rpes: item.records_por_rpe.reduce((acc, r) => {
-          acc[String(r.RPE)] = {
-            peso: r["Peso (kg)"],
-            reps: r["Repeticiones"],
-            fecha: r["Fecha"],
-            rm: r["RM"]
-          };
+          const rpeKey = String(r.RPE);
+          const rmNuevo = Number(r.RM || 0);
+          const rmExistente = acc[rpeKey]?.rm || 0;
+
+          if (!acc[rpeKey] || rmNuevo > rmExistente) {
+            acc[rpeKey] = {
+              peso: r["Peso (kg)"],
+              reps: r["Repeticiones"],
+              fecha: r["Fecha"],
+              rm: rmNuevo 
+            };
+          }
           return acc;
         }, {})
       };
@@ -67,7 +73,7 @@ const ViewRecords = () => {
   if (loading) return (
     <div className="flex flex-col gap-4 w-full max-w-md mx-auto pb-10 px-1">
       <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
-        {[1,2,3].map(i => <div key={i} className="h-10 w-24 bg-zinc-900/40 rounded-full shrink-0 animate-pulse" />)}
+        {[1, 2, 3].map(i => <div key={i} className="h-10 w-24 bg-zinc-900/40 rounded-full shrink-0 animate-pulse" />)}
       </div>
       <div className="grid grid-cols-2 gap-2">
         <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
@@ -93,11 +99,10 @@ const ViewRecords = () => {
           <button
             key={musculo}
             onClick={() => setMusculoAbierto(musculo)}
-            className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all shrink-0 border ${
-              musculoAbierto === musculo
+            className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all shrink-0 border ${musculoAbierto === musculo
                 ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_15px_rgba(37,99,235,0.3)] scale-105'
                 : 'bg-zinc-900/50 border-white/5 text-zinc-500 hover:border-white/10'
-            }`}
+              }`}
           >
             {musculo}
           </button>
