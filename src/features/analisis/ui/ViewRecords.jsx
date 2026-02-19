@@ -25,9 +25,10 @@ const ViewRecords = () => {
     return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
   };
 
+
   const categorias = useMemo(() => {
     if (!data?.records || data.records.length === 0) return null;
-
+    
     const grupos = {};
 
     data.records.forEach(item => {

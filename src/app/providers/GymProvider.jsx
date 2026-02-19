@@ -40,11 +40,29 @@ export const GymProvider = ({ children, userId }) => {
             rm: Number(formData.rm)
         });
 
+        if (nuevaMarca.status == 'success') {
+            setData(prevData => {
+                const listaActual = prevData?.data || [];
 
-        setData(prevData => ({
-            ...prevData,
-            records: [nuevaMarca, ...(prevData?.records || [])]
-        }));
+                // Calcular el máximo id de todos los records existentes
+                const maxId = listaActual.length > 0 
+                    ? Math.max(...listaActual.map(r => r.id || 0)) 
+                    : 0;
+                const nuevoId = maxId + 1;
+
+                return {
+                    ...prevData,
+                    records: [
+                        {
+                            id: nuevoId,
+                            ejercicio: nuevaMarca.ejercicio,
+                            records_por_rpe: nuevaMarca.records_por_rpe
+                        },
+                        ...listaActual
+                    ]
+                };
+            });
+        }
     };
 
     useEffect(() => {
