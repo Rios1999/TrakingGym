@@ -151,6 +151,7 @@ const FormularioEjercicio = ({ userId }) => {
                                 <div className="flex items-center gap-1">
                                     <input
                                         required type="number" name="peso_kg" step="0.5"
+                                        inputMode="decimal"
                                         value={formData.peso_kg} onChange={handleChange}
                                         placeholder="0"
                                         className="bg-transparent text-right text-base font-black text-white outline-none w-10 placeholder:text-zinc-800"
@@ -164,6 +165,7 @@ const FormularioEjercicio = ({ userId }) => {
                                 <div className="flex items-center gap-1">
                                     <input
                                         required type="number" name="repeticiones"
+                                        inputMode="decimal"
                                         value={formData.repeticiones} onChange={handleChange}
                                         placeholder="0"
                                         className="bg-transparent text-right text-base font-black text-white outline-none w-8 placeholder:text-zinc-800"
@@ -182,6 +184,7 @@ const FormularioEjercicio = ({ userId }) => {
                         <div className="flex items-center gap-2">
                             <input
                                 required type="number" name="peso_corporal" step="0.1"
+                                inputMode="decimal"
                                 value={cargandoPeso ? '' : formData.peso_corporal}
                                 onChange={handleChange}
                                 className="bg-transparent text-right text-sm font-black text-blue-500 outline-none w-12"
