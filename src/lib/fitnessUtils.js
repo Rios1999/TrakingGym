@@ -6,7 +6,7 @@
  * @param {number|string} reps - Repeticiones realizadas
  * @returns {string} - RM calculado con un decimal
  */
-export const calcularRmEpley = (ejercicio, peso, tuPeso, reps , rpe) => {
+export const calcularRmEpley = (tiene_carga, peso, tuPeso, reps , rpe) => {
     const pBarra = parseFloat(peso) || 0;
     const pCuerpo = parseFloat(tuPeso) || 0;
     const r = parseInt(reps) || 0;
@@ -14,17 +14,7 @@ export const calcularRmEpley = (ejercicio, peso, tuPeso, reps , rpe) => {
 
     const rVirtuales = (r + (10 - rp))
     
-    const nombreEj = (ejercicio || "").toLowerCase();
-
-    // Lista de ejercicios de autocarga
-    const ejerciciosAutocarga = [
-        "dominadas", "fondos", "flexiones", "pull ups", 
-        "dips", "muscle up", "chin ups", "domindas supinas", 
-        "zancadas", "australiana"
-    ];
-
-    const esAutocarga = ejerciciosAutocarga.some(ej => nombreEj.includes(ej));
-    const pesoEfectivo = esAutocarga ? (pBarra + pCuerpo) : pBarra;
+    const pesoEfectivo = tiene_carga ? (pBarra + pCuerpo) : pBarra;
 
     if (pesoEfectivo > 0 && r > 0) {
         return (pesoEfectivo * (1 + rVirtuales / 30)).toFixed(1);

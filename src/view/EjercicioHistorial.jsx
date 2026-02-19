@@ -47,7 +47,7 @@ const EjercicioHistorial = ({userId }) => {
                     pagina
                 );
 
-                let dataLimpia = Array.isArray(response) ? response : (response?.records || []);
+                let dataLimpia = Array.isArray(response.data) ? response.data : [];
 
                 setLogs(prev => {
                     // Evitamos duplicados por si acaso

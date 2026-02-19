@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
-import { gymApi } from './api/gymApi';
-import FormularioEjercicio from './view/FormularioEjercicio';
+import FormularioEjercicio from './components/FormularioEjercicio';
+import ViewEjercicio from './view/ViewEjercicio';
 import CoachAnalysis from './view/CoachAnalysis';
 import EjercicioHistorial from './view/EjercicioHistorial';
 import ViewRecords from './view/ViewRecords';
-import { Auth } from './components/Auth';
+import { Auth } from './view/Auth';
 import { QuickLoadSelector } from './components/QuickLoadSelector';
 import { toast } from 'react-hot-toast';
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
@@ -48,7 +48,7 @@ function App() {
 
   if (!session) return <Auth />;
 
-  const isSubPage = location.pathname === '/history' || location.pathname === '/view';
+  const isSubPage = location.pathname === '/history' || location.pathname === '/view' || location.pathname === '/view-ejercicio';
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans">
@@ -124,7 +124,7 @@ function App() {
           </div>
 
           <div className={location.pathname === '/view' ? 'block' : 'hidden'}>
-            <ViewRecords userId={session.user.id} />
+            <ViewRecords/>
           </div>
 
           <div className={location.pathname === '/analyze' ? 'block' : 'hidden'}>
@@ -139,6 +139,7 @@ function App() {
             <Route path="/add" element={null} />
             <Route path="/view" element={null} />
             <Route path="/analyze" element={null} />
+            <Route path="/view-ejercicio" element={<ViewEjercicio />} />
           </Routes>
         </main>
       </GymProvider>

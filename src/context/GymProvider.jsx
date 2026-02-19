@@ -8,18 +8,17 @@ export const GymProvider = ({ children, userId }) => {
     const [loading, setLoading] = useState(false);
 
     const fetchData = useCallback(async () => {
+        
         if (!userId) return;
-
         setLoading(true);
         try {
-            const [viewRecords, stats] = await Promise.all([
+            const [viewRecordsResponse, stats] = await Promise.all([
                 gymApi.getRecords(userId),
-                gymApi.getStats(userId)
+                //gymApi.getStats(userId)
             ]);
 
-            // Guardamos ambos resultados en el estado 'data'
             setData({
-                records: viewRecords.records || [],
+                records: viewRecordsResponse.data || [],
                 stats: stats || null
             });
         } catch (error) {
@@ -34,11 +33,11 @@ export const GymProvider = ({ children, userId }) => {
         const nuevaMarca = await gymApi.registrarSerie({
             ...formData,
             user_id: userId, // ID proveniente de Supabase Auth
-            peso: Number(formData.peso),
-            peso_corporal: Number(formData.tuPeso),
+            peso: Number(formData.peso_kg),
+            peso_corporal: Number(formData.peso_corporal),
             repeticiones: Number(formData.repeticiones),
             rpe: Number(formData.rpe),
-            rm: Number(formData.rmEstimado)
+            rm: Number(formData.rm)
         });
 
 
@@ -51,7 +50,7 @@ export const GymProvider = ({ children, userId }) => {
 
     useEffect(() => {
         fetchData();
-    }, [fetchData]);
+    }, [userId]);
 
 
     return (

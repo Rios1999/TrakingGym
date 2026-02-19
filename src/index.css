@@ -32,6 +32,7 @@
   }
 }
 
+
 /* --- ESTILO DEL INPUT DE FECHA Y EL ICONO --- */
 input::-webkit-date-and-time-value {
   text-align: left;
@@ -54,4 +55,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     background-position: right 12px center;
     background-size: 16px;
     display: block !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none !important;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
 }
