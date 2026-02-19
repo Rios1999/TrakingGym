@@ -1,27 +1,25 @@
 import { useState, useEffect } from 'react';
-import { supabase } from './lib/supabase';
-import FormularioEjercicio from './components/FormularioEjercicio';
-import ViewEjercicio from './view/ViewEjercicio';
-import CoachAnalysis from './view/CoachAnalysis';
-import EjercicioHistorial from './view/EjercicioHistorial';
-import ViewRecords from './view/ViewRecords';
-import { Auth } from './view/Auth';
-import { QuickLoadSelector } from './components/QuickLoadSelector';
+import { supabase } from '../shared/lib/supabase';
+import FormularioEjercicio from '../features/ejercicios/components/FormularioEjercicio';
+import ViewEjercicio from '../features/ejercicios/ui/ViewEjercicio';
+import CoachAnalysis from '../features/analisis/ui/CoachAnalysis';
+import EjercicioHistorial from '../features/ejercicios/ui/EjercicioHistorial';
+import ViewRecords from '../features/analisis/ui/ViewRecords';
+import { Auth } from '../features/auth/ui/Auth';
+import { QuickLoadSelector } from '../features/ejercicios/components/QuickLoadSelector';
 import { toast } from 'react-hot-toast';
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
-import { GymProvider } from './context/GymProvider';
-import packageInfo from '../package.json';
+import { GymProvider } from './providers/GymProvider';
+import packageInfo from '../../package.json';
 
-// --- NUEVO COMPONENTE PARA RESETEAR SCROLL ---
 function ScrollToTop() {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    // Usamos un pequeño delay de 10ms para que el DOM se asiente
     const timeout = setTimeout(() => {
       window.scrollTo({
         top: 0,
-        behavior: 'instant' // 'smooth' puede ser lento en apps de records, 'instant' con delay elimina el parpadeo
+        behavior: 'instant'
       });
     }, 10);
 
@@ -52,7 +50,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans">
-      {/* Componente invisible que resetea el scroll */}
       <ScrollToTop />
 
       <header className="flex items-center justify-between py-3 px-4 border-b border-white/5 mb-2 sticky top-0 bg-zinc-950/80 backdrop-blur-md z-[60]">
@@ -113,7 +110,6 @@ function App() {
       <GymProvider userId={session?.user?.id}>
         <main className="max-w-md mx-auto px-4 pb-24 transition-all duration-300 ease-in-out">
 
-          {/* SECCIÓN ADD: Ahora también se muestra si el path es "/" */}
           <div className={(location.pathname === '/add' || location.pathname === '/') ? 'block' : 'hidden'}>
             <FormularioEjercicio userId={session.user.id} />
             <div className="flex items-center gap-4 my-4 px-6 opacity-30">
@@ -131,11 +127,9 @@ function App() {
             <CoachAnalysis userId={session.user.id} />
           </div>
 
-          {/* Las Routes solo para el historial, que sí es una página aparte */}
           <Routes>
             <Route path="/" element={<Navigate replace to="/add" />} />
             <Route path="/history" element={<EjercicioHistorial userId={session.user.id} />} />
-            {/* Las demás rutas en null porque ya las manejas con los div de arriba */}
             <Route path="/add" element={null} />
             <Route path="/view" element={null} />
             <Route path="/analyze" element={null} />
@@ -144,11 +138,9 @@ function App() {
         </main>
       </GymProvider>
 
-      {/* NAV INFERIOR CORREGIDO */}
       {!isSubPage && (
         <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-2 flex justify-between shadow-2xl z-50">
           <TabButton
-            // IMPORTANTE: ADD activo si es /add o si es /
             active={location.pathname === '/add' || location.pathname === '/'}
             onClick={() => navigate("/add")}
             label="ADD" icon="⚡"

@@ -1,12 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import GraficoProgreso from '../components/GraficoProgreso';
-import { gymApi } from '../api/gymApi';
+import { getStats } from '../api/analisisApi';
 
-// SKELETON ESPECÍFICO PARA COACH ANALYSIS
 const AnalysisSkeleton = () => (
     <div className="w-full max-w-md mx-auto px-2 animate-pulse">
         <div className="bg-zinc-900/40 rounded-[2.5rem] border border-white/5 p-6 shadow-2xl overflow-hidden">
-            {/* Header Skeleton */}
             <div className="flex justify-between items-center mb-8">
                 <div className="space-y-2">
                     <div className="h-2 w-24 bg-white/10 rounded-full" />
@@ -15,9 +13,7 @@ const AnalysisSkeleton = () => (
                 <div className="h-10 w-10 bg-white/10 rounded-2xl" />
             </div>
 
-            {/* Graph Skeleton */}
             <div className="h-[200px] w-full bg-white/5 rounded-3xl mb-6 relative overflow-hidden">
-                {/* Simulación de líneas del gráfico */}
                 <div className="absolute inset-0 flex items-end justify-around px-4 pb-4">
                     <div className="h-[40%] w-2 bg-white/5 rounded-t-full" />
                     <div className="h-[60%] w-2 bg-white/5 rounded-t-full" />
@@ -26,7 +22,6 @@ const AnalysisSkeleton = () => (
                 </div>
             </div>
 
-            {/* Warning Skeleton */}
             <div className="w-full h-px bg-white/5 mb-6" />
             <div className="h-12 w-full bg-white/5 rounded-2xl" />
         </div>
@@ -41,8 +36,7 @@ const CoachAnalysis = ({ userId }) => {
     const fetchBenchmark = async () => {
         setLoading(true);
         try {
-            // Pasamos el ID del usuario para que n8n/Supabase filtre sus datos
-            const datos = await gymApi.getStats(userId);
+            const datos = await getStats(userId);
             setAnalisis(datos);
         } catch (err) {
             console.error("Error", err);
@@ -51,11 +45,6 @@ const CoachAnalysis = ({ userId }) => {
         }
     };
 
-    useEffect(() => {
-        if (userId) {
-            fetchBenchmark()
-        }
-    }, [])
 
     const alertaFatiga = useMemo(() => {
         if (!analisis?.records || !ejercicioActivo) return null;
@@ -84,7 +73,6 @@ const CoachAnalysis = ({ userId }) => {
         return null;
     }, [analisis, ejercicioActivo]);
 
-    // APLICACIÓN DEL SKELETON
     if (loading) {
         return <AnalysisSkeleton />;
     }
@@ -96,7 +84,6 @@ const CoachAnalysis = ({ userId }) => {
     return (
         <div className="flex flex-col gap-3 w-full max-w-md mx-auto px-2">
             <div className="relative bg-zinc-900/40 rounded-[2.5rem] border border-white/5 shadow-2xl overflow-hidden backdrop-blur-sm">
-                {/* HEADER */}
                 <div className="flex justify-between items-center px-6 pt-6 pb-2">
                     <div className="flex flex-col">
                         <span className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.3em]">Analítica de Rendimiento</span>

@@ -1,18 +1,15 @@
-import { useState, useEffect } from 'react'; // Añadido useEffect
-import { supabase } from '../lib/supabase';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../../shared/lib/supabase';
 
 export const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  // Estado para detectar si el usuario viene a cambiar su contraseña
   const [modoEstablecerPassword, setModoEstablecerPassword] = useState(false);
 
   useEffect(() => {
-    // 1. Comprobación inmediata al cargar el componente
     const checkHash = () => {
       const hash = window.location.hash;
-      // Si la URL contiene 'type=invite' o 'type=recovery', activamos el modo
       if (hash && (hash.includes("type=invite") || hash.includes("type=recovery"))) {
         setModoEstablecerPassword(true);
       }
@@ -20,7 +17,6 @@ export const Auth = () => {
 
     checkHash();
 
-    // 2. Escuchar cambios de estado (por si acaso el evento llega después)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
         setModoEstablecerPassword(true);
@@ -35,7 +31,6 @@ export const Auth = () => {
     setLoading(true);
 
     if (modoEstablecerPassword) {
-      // Lógica para actualizar la contraseña (Invitación/Recuperación)
       const { error } = await supabase.auth.updateUser({ password });
       if (error) {
         alert("Error al establecer contraseña: " + error.message);
@@ -44,7 +39,6 @@ export const Auth = () => {
         setModoEstablecerPassword(false);
       }
     } else {
-      // Lógica de Login normal
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) alert("Error de acceso: " + error.message);
     }
@@ -76,7 +70,6 @@ export const Auth = () => {
 
         <form onSubmit={handleAction} className="space-y-6">
           <div className="space-y-4">
-            {/* Solo mostramos Email si NO estamos en modo password */}
             {!modoEstablecerPassword && (
               <div className="group">
                 <label className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest ml-1 mb-2 block group-focus-within:text-blue-500 transition-colors">

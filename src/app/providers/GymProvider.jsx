@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useCallback, useEffect } from 'react';
-import { gymApi } from '../api/gymApi';
+import { getRecords, getStats } from '../../features/analisis/api/analisisApi';
+import { registrarSerie } from '../../features/ejercicios/api/ejerciciosApi';
 
 const GymContext = createContext();
 
@@ -8,13 +9,13 @@ export const GymProvider = ({ children, userId }) => {
     const [loading, setLoading] = useState(false);
 
     const fetchData = useCallback(async () => {
-        
+
         if (!userId) return;
         setLoading(true);
         try {
             const [viewRecordsResponse, stats] = await Promise.all([
-                gymApi.getRecords(userId),
-                //gymApi.getStats(userId)
+                getRecords(userId),
+                getStats(userId)
             ]);
 
             setData({
@@ -29,10 +30,9 @@ export const GymProvider = ({ children, userId }) => {
     }, [userId]);
 
     const enviarDatos = async (formData) => {
-        // Enviamos todo el objeto incluyendo explícitamente el user_id
-        const nuevaMarca = await gymApi.registrarSerie({
+        const nuevaMarca = await registrarSerie({
             ...formData,
-            user_id: userId, // ID proveniente de Supabase Auth
+            user_id: userId,
             peso: Number(formData.peso_kg),
             peso_corporal: Number(formData.peso_corporal),
             repeticiones: Number(formData.repeticiones),
@@ -43,7 +43,6 @@ export const GymProvider = ({ children, userId }) => {
 
         setData(prevData => ({
             ...prevData,
-            // Añadimos el nuevo récord al principio de la lista
             records: [nuevaMarca, ...(prevData?.records || [])]
         }));
     };

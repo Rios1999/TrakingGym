@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { calcularRmEpley } from '../lib/fitnessUtils';
+import { calcularRmEpley } from '../../../shared/lib/fitnessUtils';
 import { toast } from 'react-hot-toast';
-import { gymApi } from '../api/gymApi';
-import { useGym } from '../context/GymProvider';
-import { useNavigate,useLocation } from 'react-router-dom';
+import { getUltimoRegistro } from '../../analisis/api/analisisApi';
+import { useGym } from '../../../app/providers/GymProvider';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const FormularioEjercicio = ({ userId }) => {
     const { enviarDatos } = useGym();
@@ -15,15 +15,15 @@ const FormularioEjercicio = ({ userId }) => {
     const [cargandoPeso, setCargandoPeso] = useState(false);
 
     const [formData, setFormData] = useState({
-        user_id:userId,
+        user_id: userId,
         ejercicio: '',
         peso_kg: '',
         peso_corporal: '',
         repeticiones: '',
         rpe: '8',
         fecha: hoy,
-        tiene_carga:true,
-        musculo:''
+        tiene_carga: true,
+        musculo: ''
     });
 
     const { ejercicioSeleccionado } = location.state || {};
@@ -33,17 +33,17 @@ const FormularioEjercicio = ({ userId }) => {
             setFormData(prev => ({
                 ...prev,
                 ejercicio: ejercicioSeleccionado.nombre,
-                musculo:ejercicioSeleccionado.categoria
+                musculo: ejercicioSeleccionado.categoria
             }));
         }
     }, [ejercicioSeleccionado]);
-    
+
     useEffect(() => {
         const fetchUltimoRegistro = async () => {
             if (!userId) return;
             setCargandoPeso(true);
             try {
-                const response = await gymApi.getUltimoRegistro(userId);
+                const response = await getUltimoRegistro(userId);
                 const pesoCuerpo = response?.peso_corporal;
                 if (pesoCuerpo) {
                     setFormData(prev => ({
@@ -68,6 +68,12 @@ const FormularioEjercicio = ({ userId }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (formData.ejercicio.trim() === '') {
+            toast.error("Debes Seleccionar un Ejercicio");
+            return;
+        }
+
         setEnviando(true);
         const loadingToast = toast.loading('Guardando en la nube... ☁️');
         try {
@@ -75,7 +81,7 @@ const FormularioEjercicio = ({ userId }) => {
             if ("vibrate" in navigator) navigator.vibrate([30, 50, 30]);
             toast.success('¡Entrenamiento guardado!', { id: loadingToast });
 
-            
+
         } catch (error) {
             toast.error(error.message, { id: loadingToast });
         } finally {
@@ -87,7 +93,6 @@ const FormularioEjercicio = ({ userId }) => {
         <div className="w-full max-w-md mx-auto relative px-4">
             <form onSubmit={handleSubmit} className="bg-zinc-950 p-4 rounded-[2.5rem] border border-white/10 shadow-2xl space-y-5">
 
-                {/* Visualizador de RM - Más refinado */}
                 <div className="bg-blue-500/5 border border-blue-500/20 rounded-[2rem] py-1 flex flex-col items-center justify-center">
                     <span className="text-[7px] font-black text-blue-500/60 uppercase tracking-[0.3em] mb-1">Estimated Max Power</span>
                     <div className="flex items-center gap-1.5">
@@ -97,7 +102,6 @@ const FormularioEjercicio = ({ userId }) => {
                 </div>
 
                 <div className="space-y-4">
-                    {/* SELECTOR DE EJERCICIO - Mejora UX Crítica */}
                     <div className="space-y-2">
                         <div className="flex justify-between items-center px-1">
                             <label className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Actividad</label>
@@ -114,8 +118,8 @@ const FormularioEjercicio = ({ userId }) => {
                             type="button"
                             onClick={() => navigate('/view-ejercicio')}
                             className={`w-full relative p-4 rounded-2xl border transition-all duration-300 group overflow-hidden flex items-center justify-between active:scale-[0.97] ${formData.ejercicio
-                                    ? 'bg-blue-600/10 border-blue-500/40 shadow-lg shadow-blue-500/5'
-                                    : 'bg-zinc-900/50 border-white/5 border-dashed'
+                                ? 'bg-blue-600/10 border-blue-500/40 shadow-lg shadow-blue-500/5'
+                                : 'bg-zinc-900/50 border-white/5 border-dashed'
                                 }`}
                         >
                             <div className="flex flex-col items-start z-10">
@@ -137,35 +141,40 @@ const FormularioEjercicio = ({ userId }) => {
                         </button>
                     </div>
 
-                    {/* INPUTS DE CARGA - Estilo "Control Block" */}
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-zinc-900/80 border border-white/5 rounded-2xl p-3 focus-within:border-blue-500/40 transition-all">
-                            <label className="text-[8px] font-black text-zinc-600 uppercase tracking-widest block mb-1">{ejercicioSeleccionado?.peso_corporal ? "Peso (Lastre)" : "Peso (Barra)"}</label>
-                            <div className="flex items-center gap-1">
-                                <input
-                                    required type="number" name="peso_kg" step="0.5"
-                                    value={formData.peso_kg} onChange={handleChange}
-                                    placeholder="0"
-                                    className="w-full bg-transparent text-xl font-black text-white outline-none placeholder:text-zinc-800"
-                                />
-                                <span className="text-[10px] font-bold text-zinc-700 italic">KG</span>
+                    <div className="flex justify-center">
+                        <div className="grid grid-cols-2 gap-2 w-full max-w-[300px]">
+
+                            <div className="bg-zinc-900/30 border border-white/5 rounded-xl px-3 py-1 flex items-center justify-between focus-within:border-blue-500/30 transition-all">
+                                <label className="text-[7px] font-black text-zinc-600 uppercase tracking-tighter">
+                                    {ejercicioSeleccionado?.peso_corporal ? "Lastre" : "Barra"}
+                                </label>
+                                <div className="flex items-center gap-1">
+                                    <input
+                                        required type="number" name="peso_kg" step="0.5"
+                                        value={formData.peso_kg} onChange={handleChange}
+                                        placeholder="0"
+                                        className="bg-transparent text-right text-base font-black text-white outline-none w-10 placeholder:text-zinc-800"
+                                    />
+                                    <span className="text-[8px] font-black text-zinc-700 italic">KG</span>
+                                </div>
                             </div>
-                        </div>
-                        <div className="bg-zinc-900/80 border border-white/5 rounded-2xl p-3 focus-within:border-blue-500/40 transition-all">
-                            <label className="text-[8px] font-black text-zinc-600 uppercase tracking-widest block mb-1">Reps</label>
-                            <div className="flex items-center gap-1">
-                                <input
-                                    required type="number" name="repeticiones"
-                                    value={formData.repeticiones} onChange={handleChange}
-                                    placeholder="0"
-                                    className="w-full bg-transparent text-xl font-black text-white outline-none placeholder:text-zinc-800"
-                                />
-                                <span className="text-[10px] font-bold text-zinc-700 italic">X</span>
+
+                            <div className="bg-zinc-900/30 border border-white/5 rounded-xl px-3 py-1 flex items-center justify-between focus-within:border-blue-500/30 transition-all">
+                                <label className="text-[7px] font-black text-zinc-600 uppercase tracking-tighter">Reps</label>
+                                <div className="flex items-center gap-1">
+                                    <input
+                                        required type="number" name="repeticiones"
+                                        value={formData.repeticiones} onChange={handleChange}
+                                        placeholder="0"
+                                        className="bg-transparent text-right text-base font-black text-white outline-none w-8 placeholder:text-zinc-800"
+                                    />
+                                    <span className="text-[8px] font-black text-zinc-700 italic">X</span>
+                                </div>
                             </div>
+
                         </div>
                     </div>
 
-                    {/* PESO CORPORAL - Diseño Slim */}
                     <div className="bg-zinc-900/30 border border-white/5 rounded-2xl px-4 py-2 flex items-center justify-between">
                         <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">
                             {cargandoPeso ? 'Sincronizando...' : 'Peso Corporal'}
@@ -181,7 +190,6 @@ const FormularioEjercicio = ({ userId }) => {
                         </div>
                     </div>
 
-                    {/* RPE - Más "Gaming" */}
                     <div className="bg-zinc-900/50 rounded-2xl border border-white/5 p-4">
                         <div className="flex justify-between items-center mb-3">
                             <label className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Esfuerzo (RPE)</label>
@@ -197,13 +205,12 @@ const FormularioEjercicio = ({ userId }) => {
                     </div>
                 </div>
 
-                {/* BOTÓN SUBMIT - El gran final */}
                 <button
                     type="submit"
                     disabled={enviando}
                     className={`w-full rounded-2xl py-4 font-black text-[11px] uppercase tracking-[0.3em] transition-all shadow-xl active:scale-95 ${enviando
-                            ? 'bg-zinc-800 text-zinc-600'
-                            : 'bg-white text-black hover:bg-blue-500 hover:text-white'
+                        ? 'bg-zinc-800 text-zinc-600'
+                        : 'bg-white text-black hover:bg-blue-500 hover:text-white'
                         }`}
                 >
                     {enviando ? 'Sincronizando...' : 'Registrar Marca ⚡'}

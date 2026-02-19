@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGym } from '../context/GymProvider';
+import { useGym } from '../../../app/providers/GymProvider';
 
 const SkeletonCard = () => (
   <div className="bg-zinc-900/20 border border-white/5 p-5 rounded-[2.2rem] animate-pulse">
@@ -15,7 +15,6 @@ const SkeletonCard = () => (
 
 const ViewRecords = () => {
   const { data, loading } = useGym();
-  // Inicializamos vacío; se llenará en el useEffect cuando carguen los datos
   const [musculoAbierto, setMusculoAbierto] = useState("");
   const navigate = useNavigate();
 
@@ -32,9 +31,8 @@ const ViewRecords = () => {
     const grupos = {};
 
     data.records.forEach(item => {
-      // Obtenemos el músculo del primer registro de RPE de ese ejercicio
       const nombreMusculo = item.records_por_rpe[0]?.["Musculo"] || "Otros";
-      
+
       if (!grupos[nombreMusculo]) {
         grupos[nombreMusculo] = [];
       }
@@ -51,14 +49,13 @@ const ViewRecords = () => {
           return acc;
         }, {})
       };
-      
+
       grupos[nombreMusculo].push(ejercicioProcesado);
     });
 
     return grupos;
   }, [data.records]);
 
-  // Efecto para seleccionar el primer músculo disponible automáticamente
   useEffect(() => {
     if (categorias && !musculoAbierto) {
       const primerMusculo = Object.keys(categorias)[0];
@@ -89,16 +86,15 @@ const ViewRecords = () => {
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-md mx-auto pb-10 animate-in fade-in duration-500">
-      
-      {/* SELECTOR HORIZONTAL DINÁMICO */}
+
       <div className="flex gap-2 overflow-x-auto py-2 no-scrollbar -mx-4 px-4 sticky top-0 bg-zinc-950/80 backdrop-blur-md z-10">
         {listaMusculos.map((musculo) => (
           <button
             key={musculo}
             onClick={() => setMusculoAbierto(musculo)}
             className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.15em] transition-all shrink-0 border ${
-              musculoAbierto === musculo 
-                ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_15px_rgba(37,99,235,0.3)] scale-105' 
+              musculoAbierto === musculo
+                ? 'bg-blue-600 border-blue-500 text-white shadow-[0_0_15px_rgba(37,99,235,0.3)] scale-105'
                 : 'bg-zinc-900/50 border-white/5 text-zinc-500 hover:border-white/10'
             }`}
           >
@@ -107,7 +103,6 @@ const ViewRecords = () => {
         ))}
       </div>
 
-      {/* LISTADO DE EJERCICIOS DEL MÚSCULO SELECCIONADO */}
       <div className="flex flex-col gap-8">
         {categorias[musculoAbierto]?.map((ej) => (
           <div key={ej.nombre} className="flex flex-col gap-3 animate-in slide-in-from-bottom-2 duration-300">

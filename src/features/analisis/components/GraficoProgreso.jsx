@@ -11,7 +11,6 @@ const GraficoProgreso = ({ records, analisis, onEjercicioChange }) => {
     listaEjercicios.length > 0 ? listaEjercicios[0] : ""
   );
 
-  // Sincronizar selección
   useMemo(() => {
     if (listaEjercicios.length > 0 && !listaEjercicios.includes(ejercicioSeleccionado)) {
       setEjercicioSeleccionado(listaEjercicios[0]);
@@ -24,7 +23,6 @@ const GraficoProgreso = ({ records, analisis, onEjercicioChange }) => {
     }
   }, [ejercicioSeleccionado, onEjercicioChange]);
 
-  // Filtrado directo por ejercicio (Sin RPE)
   const datosFiltrados = useMemo(() => {
     return records
       .filter(r => r.ejercicio === ejercicioSeleccionado)
@@ -41,8 +39,7 @@ const GraficoProgreso = ({ records, analisis, onEjercicioChange }) => {
   if (!records || records.length === 0) return null;
 
   return (
-    <div className="w-full max-w-2xl space-y-2"> {/* Espacio entre secciones reducido */}
-      {/* Selectores superiores - Más densos */}
+    <div className="w-full max-w-2xl space-y-2">
       <div className="flex gap-2 overflow-x-auto no-scrollbar items-center px-1 py-1">
         {listaEjercicios.map((ej) => {
           const info = analisis?.find(a => a.ejercicio === ej);
@@ -65,9 +62,8 @@ const GraficoProgreso = ({ records, analisis, onEjercicioChange }) => {
         })}
       </div>
 
-      {/* Contenedor principal - Altura y paddings reducidos */}
       <div className="w-full bg-zinc-950/50 p-4 rounded-[2rem] border border-white/10 shadow-2xl relative">
-        <div className="flex justify-between items-start mb-4 px-1"> {/* Margen inferior de 8 a 4 */}
+        <div className="flex justify-between items-start mb-4 px-1">
           <div className="flex flex-col">
             <h3 className="text-zinc-500 text-[7px] font-black uppercase tracking-[0.2em] leading-none">
               TENDENCIA <span className="text-blue-500">RM</span>
@@ -83,7 +79,6 @@ const GraficoProgreso = ({ records, analisis, onEjercicioChange }) => {
           )}
         </div>
 
-        {/* Área del gráfico - Altura ajustada para ser más compacta */}
         <div className="w-full h-[160px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={datosFiltrados} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
