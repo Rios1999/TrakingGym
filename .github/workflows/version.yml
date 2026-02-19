@@ -1,4 +1,4 @@
-name: Smart Auto Versioning
+name: Auto Versioning
 
 on:
   push:
@@ -8,8 +8,11 @@ on:
 jobs:
   patch-version:
     runs-on: ubuntu-latest
-    # No ejecutar si el commit lo hizo el propio bot para evitar bucles
-    if: "!contains(github.event.head_commit.message, 'chore: bump version')"
+    # SOLO se ejecuta si el mensaje contiene una de tus 3 palabras clave
+    if: |
+      contains(github.event.head_commit.message, 'feat:') || 
+      contains(github.event.head_commit.message, 'minor:') || 
+      contains(github.event.head_commit.message, 'build:')
     
     steps:
       - name: Checkout code
@@ -33,15 +36,15 @@ jobs:
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           
           if [[ "$COMMIT_MSG" == *"feat:"* ]]; then
-            echo "Nueva funcionalidad detectada (Minor)"
-            npm version minor -m "chore: bump version to %s [skip ci]"
-          elif [[ "$COMMIT_MSG" == *"BREAKING CHANGE"* ]]; then
-            echo "Cambio crítico detectado (Major)"
-            npm version major -m "chore: bump version to %s [skip ci]"
-          else
-            echo "Arreglo o cambio menor detectado (Patch)"
-            npm version patch -m "chore: bump version to %s [skip ci]"
+            echo "Detectado feat: -> Incrementando MAJOR (X.0.0)"
+            npm version major -m "chore: bump version to %s"
+          elif [[ "$COMMIT_MSG" == *"minor:"* ]]; then
+            echo "Detectado minor: -> Incrementando MINOR (0.X.0)"
+            npm version minor -m "chore: bump version to %s"
+          elif [[ "$COMMIT_MSG" == *"build:"* ]]; then
+            echo "Detectado build: -> Incrementando PATCH (0.0.X)"
+            npm version patch -m "chore: bump version to %s"
           fi
 
       - name: Push changes
-        run: git push origin main
+        run: git push origin main --follow-tags
