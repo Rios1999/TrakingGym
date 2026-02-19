@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
-import FormularioEjercicio from './view/FormularioEjercicio';
+import FormularioEjercicio from './components/FormularioEjercicio';
 import ViewEjercicio from './view/ViewEjercicio';
 import CoachAnalysis from './view/CoachAnalysis';
 import EjercicioHistorial from './view/EjercicioHistorial';
 import ViewRecords from './view/ViewRecords';
-import { Auth } from './components/Auth';
+import { Auth } from './view/Auth';
 import { QuickLoadSelector } from './components/QuickLoadSelector';
 import { toast } from 'react-hot-toast';
 import { Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
@@ -121,11 +121,11 @@ function App() {
               <span className="text-[8px] font-black text-zinc-700 uppercase tracking-widest">O registrar récord</span>
               <div className="h-px bg-white/5 flex-1" />
             </div>
-            <QuickLoadSelector />
+            {/*<QuickLoadSelector />*/}
           </div>
 
           <div className={location.pathname === '/view' ? 'block' : 'hidden'}>
-            <ViewRecords userId={session.user.id} />
+            <ViewRecords/>
           </div>
 
           <div className={location.pathname === '/analyze' ? 'block' : 'hidden'}>

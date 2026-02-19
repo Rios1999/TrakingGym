@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { calcularRmEpley } from '../lib/fitnessUtils';
 import { toast } from 'react-hot-toast';
 import { gymApi } from '../api/gymApi';
@@ -15,12 +15,15 @@ const FormularioEjercicio = ({ userId }) => {
     const [cargandoPeso, setCargandoPeso] = useState(false);
 
     const [formData, setFormData] = useState({
+        user_id:userId,
         ejercicio: '',
-        peso: '',
-        tuPeso: '65',
+        peso_kg: '',
+        peso_corporal: '',
         repeticiones: '',
         rpe: '8',
-        fecha: hoy
+        fecha: hoy,
+        tiene_carga:true,
+        musculo:''
     });
 
     const { ejercicioSeleccionado } = location.state || {};
@@ -29,7 +32,8 @@ const FormularioEjercicio = ({ userId }) => {
         if (ejercicioSeleccionado) {
             setFormData(prev => ({
                 ...prev,
-                ejercicio: ejercicioSeleccionado.nombre
+                ejercicio: ejercicioSeleccionado.nombre,
+                musculo:ejercicioSeleccionado.categoria
             }));
         }
     }, [ejercicioSeleccionado]);
@@ -39,12 +43,12 @@ const FormularioEjercicio = ({ userId }) => {
             if (!userId) return;
             setCargandoPeso(true);
             try {
-                const ultimo = await gymApi.getUltimoRegistro(userId);
-                const pesoCuerpo = ultimo?.ultimoPeso;
+                const response = await gymApi.getUltimoRegistro(userId);
+                const pesoCuerpo = response?.peso_corporal;
                 if (pesoCuerpo) {
                     setFormData(prev => ({
                         ...prev,
-                        tuPeso: pesoCuerpo
+                        peso_corporal: pesoCuerpo
                     }));
                 }
             } catch (err) {
@@ -56,7 +60,7 @@ const FormularioEjercicio = ({ userId }) => {
         fetchUltimoRegistro();
     }, [userId]);
 
-    const rmEstimado = calcularRmEpley(formData.ejercicio, formData.peso, formData.tuPeso, formData.repeticiones, formData.rpe);
+    const rm = calcularRmEpley(ejercicioSeleccionado?.peso_corporal, formData.peso_kg, formData.peso_corporal, formData.repeticiones, formData.rpe);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -66,20 +70,12 @@ const FormularioEjercicio = ({ userId }) => {
         e.preventDefault();
         setEnviando(true);
         const loadingToast = toast.loading('Guardando en la nube... ☁️');
-
         try {
-            await enviarDatos({ ...formData, rmEstimado });
+            await enviarDatos({ ...formData, rm });
             if ("vibrate" in navigator) navigator.vibrate([30, 50, 30]);
             toast.success('¡Entrenamiento guardado!', { id: loadingToast });
 
-            setFormData(prev => ({
-                ...prev,
-                ejercicio: '',
-                peso: '',
-                repeticiones: '',
-                rpe: '8',
-                fecha: hoy
-            }));
+            
         } catch (error) {
             toast.error(error.message, { id: loadingToast });
         } finally {
@@ -95,7 +91,7 @@ const FormularioEjercicio = ({ userId }) => {
                 <div className="bg-blue-500/5 border border-blue-500/20 rounded-[2rem] py-1 flex flex-col items-center justify-center">
                     <span className="text-[7px] font-black text-blue-500/60 uppercase tracking-[0.3em] mb-1">Estimated Max Power</span>
                     <div className="flex items-center gap-1.5">
-                        <span className="text-3xl font-black text-white italic tracking-tighter leading-none">{rmEstimado}</span>
+                        <span className="text-3xl font-black text-white italic tracking-tighter leading-none">{rm}</span>
                         <span className="text-[10px] font-black text-blue-500 italic mt-auto">KG</span>
                     </div>
                 </div>
@@ -144,11 +140,11 @@ const FormularioEjercicio = ({ userId }) => {
                     {/* INPUTS DE CARGA - Estilo "Control Block" */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="bg-zinc-900/80 border border-white/5 rounded-2xl p-3 focus-within:border-blue-500/40 transition-all">
-                            <label className="text-[8px] font-black text-zinc-600 uppercase tracking-widest block mb-1">Peso (Barra)</label>
+                            <label className="text-[8px] font-black text-zinc-600 uppercase tracking-widest block mb-1">{ejercicioSeleccionado?.peso_corporal ? "Peso (Lastre)" : "Peso (Barra)"}</label>
                             <div className="flex items-center gap-1">
                                 <input
-                                    required type="number" name="peso" step="0.5"
-                                    value={formData.peso} onChange={handleChange}
+                                    required type="number" name="peso_kg" step="0.5"
+                                    value={formData.peso_kg} onChange={handleChange}
                                     placeholder="0"
                                     className="w-full bg-transparent text-xl font-black text-white outline-none placeholder:text-zinc-800"
                                 />
@@ -176,8 +172,8 @@ const FormularioEjercicio = ({ userId }) => {
                         </span>
                         <div className="flex items-center gap-2">
                             <input
-                                required type="number" name="tuPeso" step="0.1"
-                                value={cargandoPeso ? '' : formData.tuPeso}
+                                required type="number" name="peso_corporal" step="0.1"
+                                value={cargandoPeso ? '' : formData.peso_corporal}
                                 onChange={handleChange}
                                 className="bg-transparent text-right text-sm font-black text-blue-500 outline-none w-12"
                             />

@@ -1,10 +1,9 @@
-const BASE_URL = "https://homothetic-dahlia-forfeitable.ngrok-free.dev";
-const produccion = true ? "webhook" : "webhook-test";
+const BASE_URL = import.meta.env.PROD ? VITE_HOST_PROD : import.meta.env.VITE_HOST_DEV;
 
 const headers = {
   "Content-Type": "application/json",
-  "ngrok-skip-browser-warning": "69420"
 };
+
 
 export const gymApi = {
   /**
@@ -13,7 +12,7 @@ export const gymApi = {
    */
   getStats: async (userId) => {
     // Enviamos el user_id como Query Parameter (?user_id=...)
-    const response = await fetch(`${BASE_URL}/${produccion}/e4ae5042-fe39-4c6b-be5e-5b4d3e4af8db?user_id=${userId}`, {
+    const response = await fetch(`${BASE_URL}analisis/progreso?user_id=${userId}`, {
       method: 'GET',
       headers
     });
@@ -27,10 +26,9 @@ export const gymApi = {
    * @param {number} page - Número de página para la paginación (default: 1)
    */
   getEjercicios: async (page = 1) => {
-    // Construimos la URL con los parámetros de paginación
-    const url = `${BASE_URL}/${produccion}/ecd855fb-cc55-46c7-8e61-a3edaf61b66b?page=${page}`;
+    console.log(`${BASE_URL}rendimiento/catalogo-ejercicios/?page=${page}`)
 
-    const response = await fetch(url, {
+    const response = await fetch(`${BASE_URL}rendimiento/catalogo-ejercicios/?page=${page}`, {
       method: 'GET',
       headers
     });
@@ -48,7 +46,7 @@ export const gymApi = {
    */
   registrarSerie: async (datosSerie) => {
     // Aquí el user_id ya va dentro del body JSON enviado desde App.js
-    const response = await fetch(`${BASE_URL}/${produccion}/14ca8e92-5f62-4243-aa81-d9d002af93cd`, {
+    const response = await fetch(`${BASE_URL}rendimiento/`, {
       method: 'POST',
       headers,
       body: JSON.stringify(datosSerie)
@@ -71,7 +69,7 @@ export const gymApi = {
    * @param {string} userId - ID del usuario de Supabase Auth
    */
   getRecords: async (userId) => {
-    const response = await fetch(`${BASE_URL}/${produccion}/e0ab40d4-66f2-424b-b005-2e088d30328b?user_id=${userId}`, {
+    const response = await fetch(`${BASE_URL}analisis/ver_records?user_id=${userId}`, {
       method: 'GET',
       headers
     });
@@ -96,9 +94,8 @@ export const gymApi = {
    * @param {number} pagina - Número de página para el historial
    */
   getHistorialDetallado: async (ejercicio, rpe, userId, pagina = 1) => {
-    const limit = 10;
     // Construimos la URL con todos los filtros necesarios para que Supabase sea eficiente
-    const url = `${BASE_URL}/${produccion}/e9a2ba4b-8ad2-4a65-9320-8839a389fde6?ejercicio=${encodeURIComponent(ejercicio)}&rpe=${rpe}&page=${pagina}&limit=${limit}&user_id=${userId}`;
+    const url = `${BASE_URL}analisis/historial_ejercicio?ejercicio=${encodeURIComponent(ejercicio)}&rpe_target=${rpe}&page=${pagina}&user_id=${userId}`;
 
     const response = await fetch(url, {
       method: 'GET',
@@ -124,7 +121,7 @@ export const gymApi = {
    */
   getUltimoRegistro: async (userId) => {
 
-    const response = await fetch(`${BASE_URL}/${produccion}/f4d80e43-33ef-407a-8a67-d7d5d191eccc?user_id=${userId}`, {
+    const response = await fetch(`${BASE_URL}analisis/ultimo_peso_corporal?user_id=${userId}`, {
       method: 'GET',
       headers
     });

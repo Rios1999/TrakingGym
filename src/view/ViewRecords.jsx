@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGym } from '../context/GymProvider';
 
-// Sub-componente para el efecto de carga
 const SkeletonCard = () => (
   <div className="bg-zinc-900/20 border border-white/5 p-5 rounded-[2.2rem] animate-pulse">
     <div className="flex justify-between items-start mb-4">
@@ -14,10 +13,10 @@ const SkeletonCard = () => (
   </div>
 );
 
-const ViewRecords = ({ userId }) => {
+const ViewRecords = () => {
   const { data, loading } = useGym();
-  // Inicializamos con el primer músculo que aparezca o "Pierna"
-  const [musculoAbierto, setMusculoAbierto] = useState("Pierna");
+  // Inicializamos vacío; se llenará en el useEffect cuando carguen los datos
+  const [musculoAbierto, setMusculoAbierto] = useState("");
   const navigate = useNavigate();
 
   const getRpeColor = (rpe) => {
@@ -28,32 +27,44 @@ const ViewRecords = ({ userId }) => {
   };
 
   const categorias = useMemo(() => {
-    if (!data?.records) return null;
+    if (!data?.records || data.records.length === 0) return null;
+
     const grupos = {};
-    data.records.forEach(rec => {
-      const musculo = rec.musculo || "Otros";
-      if (!grupos[musculo]) grupos[musculo] = {};
-      const nombreEj = rec.ejercicio;
-      if (!grupos[musculo][nombreEj]) grupos[musculo][nombreEj] = { nombre: nombreEj, rpes: {} };
-      const rpeKey = String(rec.rpe);
-      const pesoActual = Number(rec.peso) || 0;
-      const repsActual = Number(rec.reps) || 0;
-      const recordExistente = grupos[musculo][nombreEj].rpes[rpeKey];
-      const esMejor = !recordExistente || 
-        (pesoActual > recordExistente.peso) || 
-        (pesoActual === recordExistente.peso && repsActual > recordExistente.reps);
-      if (esMejor) {
-        grupos[musculo][nombreEj].rpes[rpeKey] = {
-          peso: pesoActual,
-          reps: repsActual,
-          fecha: rec.fecha
-        };
+
+    data.records.forEach(item => {
+      // Obtenemos el músculo del primer registro de RPE de ese ejercicio
+      const nombreMusculo = item.records_por_rpe[0]?.["Musculo"] || "Otros";
+      
+      if (!grupos[nombreMusculo]) {
+        grupos[nombreMusculo] = [];
       }
+
+      const ejercicioProcesado = {
+        nombre: item.ejercicio,
+        rpes: item.records_por_rpe.reduce((acc, r) => {
+          acc[String(r.RPE)] = {
+            peso: r["Peso (kg)"],
+            reps: r["Repeticiones"],
+            fecha: r["Fecha"],
+            rm: r["RM"]
+          };
+          return acc;
+        }, {})
+      };
+      
+      grupos[nombreMusculo].push(ejercicioProcesado);
     });
-    const final = {};
-    Object.keys(grupos).forEach(m => final[m] = Object.values(grupos[m]));
-    return final;
+
+    return grupos;
   }, [data.records]);
+
+  // Efecto para seleccionar el primer músculo disponible automáticamente
+  useEffect(() => {
+    if (categorias && !musculoAbierto) {
+      const primerMusculo = Object.keys(categorias)[0];
+      setMusculoAbierto(primerMusculo);
+    }
+  }, [categorias, musculoAbierto]);
 
   if (loading) return (
     <div className="flex flex-col gap-4 w-full max-w-md mx-auto pb-10 px-1">
@@ -79,7 +90,7 @@ const ViewRecords = ({ userId }) => {
   return (
     <div className="flex flex-col gap-6 w-full max-w-md mx-auto pb-10 animate-in fade-in duration-500">
       
-      {/* SELECTOR HORIZONTAL DE MÚSCULOS */}
+      {/* SELECTOR HORIZONTAL DINÁMICO */}
       <div className="flex gap-2 overflow-x-auto py-2 no-scrollbar -mx-4 px-4 sticky top-0 bg-zinc-950/80 backdrop-blur-md z-10">
         {listaMusculos.map((musculo) => (
           <button
@@ -100,7 +111,6 @@ const ViewRecords = ({ userId }) => {
       <div className="flex flex-col gap-8">
         {categorias[musculoAbierto]?.map((ej) => (
           <div key={ej.nombre} className="flex flex-col gap-3 animate-in slide-in-from-bottom-2 duration-300">
-            {/* Título del Ejercicio */}
             <div className="flex items-center gap-3 px-1">
               <div className="h-4 w-1 bg-blue-600 rounded-full" />
               <h3 className="text-sm font-black italic text-white uppercase tracking-tighter">
@@ -108,7 +118,6 @@ const ViewRecords = ({ userId }) => {
               </h3>
             </div>
 
-            {/* Grid de RPEs */}
             <div className="grid grid-cols-2 gap-2">
               {Object.keys(ej.rpes).sort((a, b) => b - a).map((rpe) => (
                 <div
@@ -116,22 +125,19 @@ const ViewRecords = ({ userId }) => {
                   onClick={() => navigate("/history", { state: { nombreEjercicio: ej.nombre, rpeFiltrado: rpe } })}
                   className="bg-zinc-900/40 border border-white/5 p-4 rounded-[2rem] flex flex-col relative overflow-hidden group hover:border-blue-500/30 transition-all active:scale-95"
                 >
-                  {/* Etiqueta RPE */}
                   <div className={`absolute top-3 right-4 px-2 py-0.5 rounded-full border text-[7px] font-black uppercase tracking-tighter ${getRpeColor(rpe)}`}>
                     RPE {rpe}
                   </div>
 
-                  {/* Valor Principal */}
                   <div className="flex items-baseline gap-1 mt-3">
                     <span className="text-2xl font-black text-white tracking-tighter tabular-nums">
-                      {ej.rpes[rpe].peso || ej.rpes[rpe].reps}
+                      {ej.rpes[rpe].peso > 0 ? ej.rpes[rpe].peso : ej.rpes[rpe].reps}
                     </span>
                     <span className="text-[9px] font-black text-blue-500 uppercase">
                       {ej.rpes[rpe].peso > 0 ? 'kg' : 'reps'}
                     </span>
                   </div>
 
-                  {/* Detalle Inferior */}
                   <div className="flex justify-between items-end mt-1">
                     <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-tighter">
                       {ej.rpes[rpe].peso > 0 ? `${ej.rpes[rpe].reps} reps` : 'Bodyweight'}
@@ -139,7 +145,6 @@ const ViewRecords = ({ userId }) => {
                     <span className="text-[7px] text-zinc-800 font-bold">{ej.rpes[rpe].fecha}</span>
                   </div>
 
-                  {/* Marca de Agua decorativa */}
                   <span className="absolute -bottom-2 -left-1 text-4xl font-black text-white/[0.02] italic pointer-events-none group-hover:text-blue-500/5 transition-colors">
                     {rpe}
                   </span>

@@ -29,8 +29,6 @@ const ViewEjercicio = () => {
     if (loading) return;
     if (observer.current) observer.current.disconnect();
 
-    console.log(hasMore)
-
     observer.current = new IntersectionObserver(entries => {
       // Si el último elemento entra en pantalla
 
@@ -49,8 +47,7 @@ const ViewEjercicio = () => {
       try {
         console.log("Pidiendo página:", pagina);
         const response = await gymApi.getEjercicios(pagina);
-        const nuevosEjercicios = Array.isArray(response) ? response : (response?.records || []);
-
+        const nuevosEjercicios = Array.isArray(response.data) ? response.data : [];
         
         setListaEjercicios(prev => {
           const filtrados = nuevosEjercicios.filter(n => !prev.some(p => p.id === n.id));
@@ -101,7 +98,7 @@ const ViewEjercicio = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 px-1 pb-10">
+      <div className="grid grid-cols-1 gap-3 px-1 pb-10">
         {/* RENDERIZADO DE LA LISTA */}
         {categorias[musculoAbierto]?.map((ej, index) => {
           // COMPROBACIÓN: ¿Es este el último elemento visible de este músculo?
@@ -112,7 +109,7 @@ const ViewEjercicio = () => {
               key={ej.id || index}
               // AQUÍ SE PONE EL VIGILANTE
               ref={esUltimo ? lastElementRef : null} 
-              onClick={() => navigate("/add", { state: { ejercicioSeleccionado: ej } })}
+              onClick={() => navigate("/add", { state: { ejercicioSeleccionado: ej} })}
               className="group relative bg-zinc-900/40 border border-white/5 p-3 rounded-[1.8rem] flex items-center gap-3 transition-all active:scale-[0.96]"
             >
               {/* Contenido de tu botón (Icono y Texto) */}
