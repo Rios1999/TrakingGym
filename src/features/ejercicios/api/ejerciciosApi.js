@@ -50,7 +50,7 @@ export const registrarSerie = async (datosSerie) => {
     throw new Error(result.message || "No se pudo guardar la marca");
   }
 
-  return result;
+  return result.data;
 };
 
 /**
