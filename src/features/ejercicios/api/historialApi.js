@@ -16,13 +16,14 @@ export const getHistorialDetallado = async (ejercicio, rpe, userId, pagina = 1) 
   });
 
   if (!response.ok) {
-    switch (response.status) {
-      case 404:
-        throw new Error("Webhook de historial no encontrado.");
-      default:
-        throw new Error(`Error cargando historial (${response.status})`);
-    }
+    throw new Error(`Error de Red (${response.status})`);
   }
 
-  return await response.json();
+  const result = await response.json();
+
+  if (result.status !== 'success') {
+    throw new Error(result.message || "Error al obtener el historial del ejercicio");
+  }
+
+  return result;
 };

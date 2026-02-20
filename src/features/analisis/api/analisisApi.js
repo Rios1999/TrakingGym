@@ -9,8 +9,18 @@ export const getStats = async (userId) => {
     method: 'GET',
     headers
   });
-  if (!response.ok) throw new Error("Error en el GET de estadísticas (n8n)");
-  return await response.json();
+
+  // 1. Verificación de Red
+  if (!response.ok) throw new Error(`Error de Red (${response.status})`);
+
+  const result = await response.json();
+
+  // 2. Verificación de lógica Python
+  if (result.status !== 'success') {
+    throw new Error(result.message || "Error al obtener progreso");
+  }
+
+  return result;
 };
 
 /**
@@ -23,16 +33,19 @@ export const getRecords = async (userId) => {
     headers
   });
 
+  // 1. Verificación de Red
   if (!response.ok) {
-    switch (response.status) {
-      case 404:
-        throw new Error("Webhook de Records no encontrado. Verifica n8n.");
-      default:
-        throw new Error(`Error en el servidor de Records (${response.status})`);
-    }
+    throw new Error(`Error de Red (${response.status})`);
   }
 
-  return await response.json();
+  const result = await response.json();
+
+  // 2. Verificación de lógica Python
+  if (result.status !== 'success') {
+    throw new Error(result.message || "Error al cargar los récords");
+  }
+
+  return result;
 };
 
 /**
@@ -45,10 +58,20 @@ export const getUltimoRegistro = async (userId) => {
     headers
   });
 
+  // 1. Verificación de Red
   if (!response.ok) {
-    throw new Error(`Error obteniendo el último registro (${response.status})`);
+    throw new Error(`Error de Red (${response.status})`);
   }
 
-  const data = await response.json();
-  return Array.isArray(data) ? data[0] : data;
+  const result = await response.json();
+
+  // 2. Verificación de lógica Python
+  if (result.status !== 'success') {
+    throw new Error(result.message || "Error al obtener el peso corporal");
+  }
+
+  // Mantenemos tu lógica de limpiar el array si es necesario
+  // Usamos result.data porque es donde suele venir la información en tu estructura
+  const dataFinal = result.data || result; 
+  return Array.isArray(dataFinal) ? dataFinal[0] : dataFinal;
 };

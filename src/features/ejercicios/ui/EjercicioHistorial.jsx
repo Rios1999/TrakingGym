@@ -1,14 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { getHistorialDetallado } from '../api/historialApi';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 const EjercicioHistorial = ({userId }) => {
     const [logs, setLogs] = useState([]);
     const [pagina, setPagina] = useState(1);
     const [loading, setLoading] = useState(false);
     const [hasMore, setHasMore] = useState(true);
-
-    const navigate = useNavigate()
     const location = useLocation()
 
     const {nombreEjercicio,rpeFiltrado} = location.state || {}
